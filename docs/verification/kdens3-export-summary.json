@@ -1,0 +1,18 @@
+{
+  "status": "packed_and_checked",
+  "created_at": "2026-11-06T17:55:11.537509+00:00",
+  "training_performed": false,
+  "source": "E:\\work\\MahjongAi\\artifacts\\kdens3-browser\\export\\model.onnx",
+  "source_bytes": 173118078,
+  "source_sha256": "8aeb71c41d3d94b95825a4ce124619c5eb1613292979eb781673b12514e1e883",
+  "model_bytes": 87210216,
+  "model_sha256": "14b4e03d29f4ef21789842681e90930f69b2d96b970e64572900b629b8eceb94",
+  "reduction_percent": 49.62385384153814,
+  "below_github_100_mib": true,
+  "original_compute_nodes_unchanged": true,
+  "original_compute_node_count": 630,
+  "added_constant_cast_count": 498,
+  "all_initializer_roundtrips_bitwise_exact": true,
+  "runtime_compute": "FP32, unchanged three-student mean-softmax",
+  "fixtures_sha256": "7bb33cb0b5bbad6e40700eccdd60bad5ddbdb5ee2f63b866831e2da6cd59b30d"
+}

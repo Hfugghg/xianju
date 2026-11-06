@@ -1,0 +1,49 @@
+{
+  "upstream": "https://github.com/ailab-pku/PyMahjongGB",
+  "commit": "bb404f3f3480c2569e14d54043ad06e366e128df",
+  "command": [
+    "E:\\work\\MahjongAi\\.venv\\python.exe",
+    "E:\\work\\MahjongAi\\tools\\emsdk\\upstream\\emscripten\\em++.py",
+    "E:\\work\\MahjongAi\\tools\\mahjong-wasm\\bridge.cpp",
+    "E:\\work\\MahjongAi\\tools\\mahjong-wasm\\upstream\\MahjongGB\\mahjong-algorithm\\fan_calculator.cpp",
+    "E:\\work\\MahjongAi\\tools\\mahjong-wasm\\upstream\\MahjongGB\\mahjong-algorithm\\shanten.cpp",
+    "-O2",
+    "-std=c++17",
+    "--bind",
+    "-fexceptions",
+    "-sMODULARIZE=1",
+    "-sEXPORT_ES6=1",
+    "-sENVIRONMENT=web,worker,node",
+    "-sALLOW_MEMORY_GROWTH=1",
+    "-o",
+    "E:\\work\\MahjongAi\\web\\arcade\\public\\runtime\\mcr\\scorer.mjs"
+  ],
+  "return_format": [
+    "points",
+    "count",
+    "nameCN",
+    "nameEN"
+  ],
+  "files": [
+    {
+      "file": "LICENSE.mahjong-algorithm",
+      "sha256": "ecebe66dbf9124af4664486841780f80c23ed277c91048d46e6c33bfd612a37e",
+      "bytes": 1117
+    },
+    {
+      "file": "LICENSE.PyMahjongGB",
+      "sha256": "c90ae0b9b698b49b920cfc88f553211e4aea005a5037e7b85dbe0072e788dd2e",
+      "bytes": 1116
+    },
+    {
+      "file": "scorer.mjs",
+      "sha256": "b095fd1b992799f6cad10d2670284ad2e18505f407e03da94a695ae7452e56f6",
+      "bytes": 34127
+    },
+    {
+      "file": "scorer.wasm",
+      "sha256": "a4d62ea227883721a881342cb562ee5d5976d4026e6b7b370a49467023241417",
+      "bytes": 63264
+    }
+  ]
+}

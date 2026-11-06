@@ -1,0 +1,115 @@
+{
+  "startedAt": "2026-11-06T18:00:26.049Z",
+  "viewports": [
+    {
+      "width": 1440,
+      "initialCount": 14,
+      "lobbyOverflow": false,
+      "tableOverflow": false,
+      "enter": "passed",
+      "discard": "passed",
+      "manualSpectator": "passed",
+      "reloadRestore": "passed",
+      "completeGameSteps": 172,
+      "humanGameActions": 13,
+      "reset": "passed",
+      "return": "passed"
+    },
+    {
+      "width": 390,
+      "initialCount": 14,
+      "lobbyOverflow": false,
+      "tableOverflow": false,
+      "enter": "passed",
+      "discard": "passed",
+      "manualSpectator": "passed",
+      "reloadRestore": "passed",
+      "completeGameSteps": null,
+      "humanGameActions": null,
+      "reset": "passed",
+      "return": "passed"
+    },
+    {
+      "width": 320,
+      "initialCount": 14,
+      "lobbyOverflow": false,
+      "tableOverflow": false,
+      "enter": "passed",
+      "discard": "passed",
+      "manualSpectator": "passed",
+      "reloadRestore": "passed",
+      "completeGameSteps": null,
+      "humanGameActions": null,
+      "reset": "passed",
+      "return": "passed"
+    }
+  ],
+  "errors": [],
+  "console": [
+    {
+      "width": 1440,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 1440,
+      "type": "log",
+      "message": "Loaded numpy"
+    },
+    {
+      "width": 1440,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 1440,
+      "type": "log",
+      "message": "Loaded numpy"
+    },
+    {
+      "width": 390,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 390,
+      "type": "log",
+      "message": "Loaded numpy"
+    },
+    {
+      "width": 390,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 390,
+      "type": "log",
+      "message": "Loaded numpy"
+    },
+    {
+      "width": 320,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 320,
+      "type": "log",
+      "message": "Loaded numpy"
+    },
+    {
+      "width": 320,
+      "type": "log",
+      "message": "Loading numpy"
+    },
+    {
+      "width": 320,
+      "type": "log",
+      "message": "Loaded numpy"
+    }
+  ],
+  "externalRequests": [],
+  "status": "passed",
+  "browser": "157.0.4341.42",
+  "finishedAt": "2026-11-06T18:00:53.474Z",
+  "archiveRequests": []
+}
