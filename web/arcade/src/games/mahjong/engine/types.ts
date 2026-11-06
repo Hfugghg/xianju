@@ -14,5 +14,6 @@ export interface MahjongClient {
   restore(replay:GameView['replay']):Promise<GameView>;
   action(actionId: number): Promise<GameView>;
   advance(): Promise<GameView>;
+  autoAdvance(): Promise<GameView>;
   dispose(): void;
 }

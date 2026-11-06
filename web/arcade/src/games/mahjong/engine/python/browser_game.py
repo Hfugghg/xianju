@@ -103,6 +103,12 @@ class BrowserGame:
         self.actions.append(action)
         return self.view()
 
+    def auto_step(self):
+        observation = self.env.obs.get(0)
+        if self.mode == 'play' and not self.env.done and observation is not None:
+            return self.step(choose_ai(self.env.agents[0], observation))
+        return self.step()
+
     def view(self):
         env = self.env
         agent = env.agents[0]
@@ -153,4 +159,6 @@ def browser_dispatch(command_json):
         return json.dumps(game.view())
     if game is None:
         raise RuntimeError('尚未开始牌局')
+    if command['type'] == 'auto':
+        return json.dumps(game.auto_step())
     return json.dumps(game.step(command.get('action')))

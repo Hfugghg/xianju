@@ -10,6 +10,27 @@ from unittest.mock import patch
 
 
 class BrowserGameTests(unittest.TestCase):
+    def test_auto_play_finishes_without_human_input(self):
+        game = BrowserGame(42, 'play')
+        for _ in range(400):
+            if game.env.done:
+                break
+            before = len(game.actions)
+            observation = game.env.obs.get(0)
+            game.auto_step()
+            self.assertEqual(len(game.actions), before + 1)
+            if observation is not None:
+                self.assertIsInstance(game.actions[-1], int)
+        self.assertTrue(game.env.done)
+        self.assertEqual(sum(game.view()['result']['scores']), 0)
+
+    def test_auto_commands_replay_exactly(self):
+        browser_dispatch(json.dumps({'type':'start','seed':42,'mode':'play'}))
+        for _ in range(12):
+            view = json.loads(browser_dispatch('{"type":"auto"}'))
+            restored = json.loads(browser_dispatch(json.dumps({'type':'restore','replay':view['replay']})))
+            self.assertEqual(view, restored)
+
     def test_bridge_failure_bypasses_referee_catches(self):
         fake_js = types.SimpleNamespace(browserMcrScore=lambda _: (_ for _ in ()).throw(RuntimeError('wasm trap')))
         with patch.dict(sys.modules, {'js':fake_js}):

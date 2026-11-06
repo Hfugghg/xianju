@@ -1,0 +1,38 @@
+{
+  "targetUrl": "http://127.0.0.1:12347/xianju/",
+  "startedAt": "2026-11-06T18:36:04.083Z",
+  "status": "passed",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "archiveRequests": [],
+  "finishedAt": "2026-11-06T18:36:33.981Z"
+}
