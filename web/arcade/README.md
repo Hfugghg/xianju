@@ -1,6 +1,6 @@
 # 闲局 · 浏览器棋牌室
 
-React + TypeScript + Vite + Mantine 静态网页，麻将游戏独立放在 `src/games/mahjong/`。规则为复式国标：136 张无花牌、8 番起和。当前通过 ONNX Runtime Web 使用 kdens3 ONNX 模型，优先 WebGPU，初始化失败回退 WASM。无账号或服务端数据库。
+React + TypeScript + Vite + Mantine 静态网页，麻将游戏独立放在 `src/games/mahjong/`。规则为复式国标：136 张无花牌、8 番起和。当前通过 ONNX Runtime Web 使用 kdens3 ONNX 模型，优先 WebGPU，初始化失败回退 WASM；WASM 在跨源隔离下按 CPU 核数启用多线程（最多 4 线程），否则单线程。无账号或服务端数据库。
 
 ## 本地运行
 
@@ -31,15 +31,17 @@ src/games/mahjong/      麻将组件、牌面、交互状态、样式与类型
 
 手牌旁可选「轻松／标准／高手」，四席共用。默认高手，保留完整原版 kdens3 决策；中低档增加受控随机选择降低难度，没有额外搜索或超原版增强。设置保存在本机，切换后下一步生效，不重开牌局或重新下载模型。正在计算时暂不能更改；信息栏显示最近实际执行的档位。
 
+推理后端同样可在手牌旁选择：自动优先 WebGPU、不可用时回退 WASM，也可固定为 WebGPU 或 WASM。选择保存在本机；切换会重建推理会话，不重新下载模型或重开牌局。信息栏显示实际使用的后端与线程数。
+
 音效通过 Howler 播放两段自制合成短 WAV，非真实麻将录音。默认关闭，可由用户开启。对局实际推进播放落牌提示，结算播放提示音；关闭音效或离开游戏停止声音，没有背景音乐。
 
 ## 本地数据
 
-`localStorage` 保存 JSON 的牌墙种子、模式、动作序列以继续未完成牌局；保存最近 30 局战绩及速度、音效设置。数据仅在当前浏览器和站点来源内使用，不上传服务器；清除浏览器数据会移除记录。读取时校验格式。恢复错误会保留原存档并显示重试；只有明确点击「放弃存档新开局」才放弃旧进度。禁用存储或写入失败会提示，当前对局仍可继续，但关闭或刷新后可能无法恢复。
+`localStorage` 保存 JSON 的牌墙种子、模式、动作序列以继续未完成牌局；保存最近 30 局战绩及速度、音效、难度与推理后端设置。数据仅在当前浏览器和站点来源内使用，不上传服务器；清除浏览器数据会移除记录。读取时校验格式。恢复错误会保留原存档并显示重试；只有明确点击「放弃存档新开局」才放弃旧进度。禁用存储或写入失败会提示，当前对局仍可继续，但关闭或刷新后可能无法恢复。
 
 ## 静态运行时与部署
 
-Python 状态机在 Web Worker 中通过 Pyodide 运行，NumPy 及 Python 标准库均部署于 `public/runtime/pyodide/`。国标算番使用 `public/runtime/mcr/scorer.mjs` 与 `scorer.wasm`，源版本和编译命令见同目录 `sources.json`。构建时 Vite 将 `public/` 原样复制到 `dist/`，发布时必须包含整个运行时目录，不能只上传 JS/CSS。大厅不启动麻将 Worker 或加载模型；进入游戏后才加载游戏组件、运行时与模型。下载进度来自实际接收字节，未知总量或初始化阶段显示不定进度。界面展示实际推理后端、调用数和最近一次推理耗时。当前不是离线 PWA。
+Python 状态机在 Web Worker 中通过 Pyodide 运行，NumPy 及 Python 标准库均部署于 `public/runtime/pyodide/`。国标算番使用 `public/runtime/mcr/scorer.mjs` 与 `scorer.wasm`，源版本和编译命令见同目录 `sources.json`。构建时 Vite 将 `public/` 原样复制到 `dist/`，发布时必须包含整个运行时目录，不能只上传 JS/CSS。大厅不启动麻将 Worker 或加载模型；进入游戏后才加载游戏组件、运行时与模型。下载进度来自实际接收字节，未知总量或初始化阶段显示不定进度。界面展示实际推理后端、调用数和最近一次推理耗时，WASM 多线程时附带线程数。`public/sw.js` 在首次访问时为同源响应补上 COOP/COEP 并自动重载一次，以启用跨源隔离和多线程 WASM；本地 `dev`/`preview` 由 `vite.config.ts` 直接返回相同的头，不需要重载。当前不是离线 PWA。
 
 本地发布前执行项目根目录的 `scripts/vendor_arcade_runtime.py`（以该脚本当前参数为准）准备 Pyodide/NumPy，并保留已编译的 mcr 运行时与许可证。若移动站点路径，保持 Vite 相对 base 和 `runtime/` 相对位置。GitHub Pages 发布整个 `dist/`，使用 HTTPS 或 localhost。第三方来源与许可证见 `THIRD_PARTY_NOTICES.md`。
 

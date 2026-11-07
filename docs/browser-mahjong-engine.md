@@ -26,7 +26,11 @@ Pyodide 0.27.7 的 loader 使用 fetch SRI SHA-256；该哈希属于 wheel 原�
 
 当前四席均使用已发布的 kdens3 三学生集成 ONNX。Worker 向 Python 请求各席独立的 38×4×9 观测和 235 动作 mask，异步调用 ONNX Runtime 后，提交经过合法性校验的动作。观战透视只用于界面，不传给模型。上游编码器文件与已验证模型来源的编码器 SHA-256 完全相同。
 
-进入麻将后才下载模型，stream 字节累积进度以已知 87,210,216 字节为分母，完成后校验固定 SHA-256。优先 WebGPU，不可用时使用单线程 WASM；模型失败不会改用启发式。`GameView.ai` 提供真实后端、推理调用数及最近耗时。恢复动作不计作推理。ORT 的 MJS/WASM 全部同源。初始化可由 `createMahjongClient` 的第三参数 AbortSignal 终止。
+进入麻将后才下载模型，stream 字节累积进度以已知 87,210,216 字节为分母，完成后校验固定 SHA-256。优先 WebGPU，不可用时使用 WASM；跨源隔离启用时按 CPU 核数使用多线程（最多 4 线程），否则退回单线程。模型失败不会改用启发式。`GameView.ai` 提供真实后端、线程数、推理调用数及最近耗时。恢复动作不计作推理。ORT 的 MJS/WASM 全部同源。初始化可由 `createMahjongClient` 的第三参数 AbortSignal 终止。
+
+WASM 多线程依赖 `SharedArrayBuffer`，而后者只在跨源隔离页面中暴露。GitHub Pages 无法设置 COOP/COEP 响应头，因此 `public/sw.js` 对同源响应补上这两个头并在首次访问时自动重载一次；隔离失败或超时则退回单线程，不阻止对局。开发与预览服务器由 `vite.config.ts` 返回相同的头。
+
+界面提供自动/WebGPU/WASM 后端选择，保存在本机。切换只重建 `InferenceSession`，复用 Worker 内已加载的模型字节，不重新下载或重开牌局；新会话创建成功后才释放旧会话，失败时保留原后端。`GameView.ai.backend` 与 `threads` 始终是实际值。
 
 ## 验证
 

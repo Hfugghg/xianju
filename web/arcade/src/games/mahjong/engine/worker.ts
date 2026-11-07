@@ -1,7 +1,7 @@
 import { cacheState, loadCachedModel, saveCachedModel, removeCachedModel, validModel, MODEL_CACHE_CHANNEL } from '../../../shared/modelCache';
 import { mahjongModel } from '../modelSpec';
 import { isDifficulty, selectAction } from './policy';
-import type { Difficulty } from './types';
+import { isBackendPreference, type BackendPreference, type Difficulty } from './types';
 import agent from './python/agent.py?raw';
 import env from './python/env.py?raw';
 import envFixed from './python/env_fixed.py?raw';
@@ -64,6 +64,7 @@ async function handle(data: any) {
   try {
     if (data.init) {
       const base = data.base;
+      requestedBackend = isBackendPreference(data.backend) ? data.backend : 'auto';
       installWheelTransport(base);
       progress('正在载入国标麻将规则引擎…');
       const scorer = await import(/* @vite-ignore */ `${base}runtime/mcr/scorer.mjs`);
@@ -112,9 +113,17 @@ async function handle(data: any) {
       const actions: Record<string, number> = {};
       for (const item of pending) actions[String(item.seat)] = await infer(item);
       view = JSON.parse(dispatch(JSON.stringify({type:'commit', actions})));
+    } else if (command.type === 'setBackend') {
+      if(!isBackendPreference(command.backend))throw new Error('未知推理后端');
+      if(!modelPayload)throw new Error('AI 模型尚未就绪');
+      const created=await createSession(modelPayload,command.backend);
+      const previous=session;session=created.session;backend=created.backend;requestedBackend=command.backend;
+      try{await previous?.release?.()}catch{/* old session is discarded regardless */}
+      postMessage({ id: data.id, backend, threads: wasmThreads });
+      return;
     } else throw new Error('未知对局命令');
     currentSeed=view.replay.seed;currentStep=view.replay.actions.length;
-    view.ai = {model:'kdens3',backend,inferenceCalls,lastInferenceMs,difficulty};
+    view.ai = {model:'kdens3',backend,threads:wasmThreads,inferenceCalls,lastInferenceMs,difficulty};
     postMessage({ id: data.id, view });
   } catch (error) {
     postMessage({ id: data.id, error: String(error) });
@@ -123,6 +132,8 @@ async function handle(data: any) {
 let ort: any;
 let session: any;
 let backend: 'webgpu'|'wasm' = 'wasm';
+let requestedBackend: BackendPreference = 'auto';
+let wasmThreads = 1;
 let difficulty:Difficulty = 'expert';
 let currentSeed=0;
 let currentStep=0;
@@ -141,8 +152,25 @@ if(typeof BroadcastChannel!=='undefined'){
  const channel=new BroadcastChannel(MODEL_CACHE_CHANNEL);
  channel.onmessage=event=>{if(event.data?.gameId===mahjongModel.gameId&&event.data.type==='preference')void saveModelIfEnabled()};
 }
+async function createSession(bytes:Uint8Array<ArrayBuffer>, preference:BackendPreference) {
+  // Build the replacement session before releasing the old one so a failed
+  // switch keeps the current backend usable.
+  if(preference!=='wasm'&&(navigator as any).gpu){
+    try{
+      const adapter=await (navigator as any).gpu.requestAdapter();
+      if(adapter)return {session:await ort.InferenceSession.create(bytes,{executionProviders:['webgpu'],preferredOutputLocation:'gpu-buffer'}),backend:'webgpu' as const};
+    }catch(error){progress(`WebGPU 不可用，使用 WASM：${String(error)}`)}
+  }
+  return {session:await ort.InferenceSession.create(bytes,{executionProviders:['wasm']}),backend:'wasm' as const};
+}
 async function initializeModel(base:string) {
-  const emit = (stage:string,loadedBytes:number) => postMessage({runtime:{stage,loadedBytes,totalBytes:modelBytes,backend}});
+  // Multi-threaded WASM needs SharedArrayBuffer, which is only exposed when the
+  // page is cross-origin isolated (public/sw.js or vite.config.ts headers).
+  // Match ONNX Runtime's own default: min(4, ceil(cores / 2)).
+  const isolated = (globalThis as {crossOriginIsolated?:boolean}).crossOriginIsolated === true;
+  const cores = navigator.hardwareConcurrency || 1;
+  wasmThreads = isolated ? Math.min(4, Math.max(1, Math.ceil(cores / 2))) : 1;
+  const emit = (stage:string,loadedBytes:number) => postMessage({runtime:{stage,loadedBytes,totalBytes:modelBytes,backend,threads:wasmThreads}});
   let cached:Uint8Array<ArrayBuffer>|null=null;
   try{
     cached=await loadCachedModel(mahjongModel);
@@ -164,14 +192,9 @@ async function initializeModel(base:string) {
   const loaded=bytes.length;
   emit('initializing',loaded); progress('正在初始化 kdens3…');
   ort=await import(/* @vite-ignore */ `${base}runtime/ort/ort.webgpu.min.mjs`);
-  ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths=`${base}runtime/ort/`;
-  if((navigator as any).gpu) {
-    try {
-      const adapter=await (navigator as any).gpu.requestAdapter();
-      if(adapter) { session=await ort.InferenceSession.create(bytes,{executionProviders:['webgpu'],preferredOutputLocation:'gpu-buffer'});backend='webgpu'; }
-    } catch(error) { progress(`WebGPU 不可用，使用 WASM：${String(error)}`); }
-  }
-  if(!session)session=await ort.InferenceSession.create(bytes,{executionProviders:['wasm']});
+  ort.env.wasm.numThreads=wasmThreads; ort.env.wasm.wasmPaths=`${base}runtime/ort/`;
+  const created=await createSession(bytes,requestedBackend);
+  session=created.session;backend=created.backend;
   emit('ready',loaded);
 }
 async function infer(item:any):Promise<number> {

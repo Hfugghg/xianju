@@ -40,4 +40,4 @@ node web\browser-smoke\run.mjs --export-dir artifacts/kdens3-packed/export-reche
 
 脚本拒绝覆盖已有输出目录。浏览器服务增加 Content-Length，仅提供模型、fixtures 和 ONNX runtime。
 
-模型来源：[Dannibal/ijcai-mahjong-ckpts-2026](https://huggingface.co/Dannibal/ijcai-mahjong-ckpts-2026)，固定 revision `6964d80b9f8a6670dda44f14b664c61112f61009`，发布页标注 MIT。发布时保留原模型来源和许可记录。棋牌室已接入此打包模型，进入麻将后按需加载，优先 WebGPU、初始化失败回退 WASM，界面显示实际推理后端与统计。
+模型来源：[Dannibal/ijcai-mahjong-ckpts-2026](https://huggingface.co/Dannibal/ijcai-mahjong-ckpts-2026)，固定 revision `6964d80b9f8a6670dda44f14b664c61112f61009`，发布页标注 MIT。发布时保留原模型来源和许可记录。棋牌室已接入此打包模型，进入麻将后按需加载，优先 WebGPU、初始化失败回退 WASM（跨源隔离下多线程），界面显示实际推理后端、线程数与统计。

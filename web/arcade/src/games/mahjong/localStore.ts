@@ -4,6 +4,7 @@ let warning='';
 const object=(value:unknown):value is Record<string,unknown>=>typeof value==='object'&&value!==null&&!Array.isArray(value);
 export function validLocal(key:string,value:unknown):boolean {
  if(key==='difficulty')return value==='easy'||value==='normal'||value==='expert';
+ if(key==='backend')return value==='auto'||value==='webgpu'||value==='wasm';
  if(key==='fast'||key==='sound')return typeof value==='boolean';
  if(key==='records')return Array.isArray(value)&&value.length<=30&&value.every(record=>object(record)&&typeof record.date==='string'&&Number.isFinite(Date.parse(record.date))&&(record.winner===null||(Number.isInteger(record.winner)&&Number(record.winner)>=0&&Number(record.winner)<=3))&&Array.isArray(record.scores)&&record.scores.length===4&&record.scores.every(score=>typeof score==='number'&&Number.isFinite(score)));
  if(key==='replay')return object(value)&&typeof value.seed==='number'&&Number.isSafeInteger(value.seed)&&value.seed>=0&&value.seed<=2147483647&&(value.mode==='play'||value.mode==='spectate')&&Array.isArray(value.actions)&&value.actions.length<=1000&&value.policy==='kdens3-v1'&&value.actions.every(action=>object(action)&&Object.keys(action).length>=1&&Object.keys(action).length<=4&&Object.entries(action).every(([seat,id])=>/^[0-3]$/.test(seat)&&Number.isInteger(id)&&Number(id)>=0&&Number(id)<235));
