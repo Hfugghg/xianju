@@ -43,3 +43,5 @@
 @media(orientation:landscape) and (max-height:360px){.table-fullscreen .hand-tile{height:36px}.table-fullscreen .hand-scroll{padding:5px 0}.table-fullscreen .hand-top{font-size:9px}.table-fullscreen .action-dock{padding:6px}.table-fullscreen .live-table{border-width:6px}.table-fullscreen:has(.spectator-hands) .table-area{grid-template-columns:minmax(0,1fr) 148px}}
 @media(orientation:landscape){.table-fullscreen .table-heading{display:flex;align-items:center;min-height:27px}.table-fullscreen .table-heading>div{display:flex;gap:12px;align-items:center}.table-fullscreen .table-heading h1{font-size:13px;margin:0}.table-fullscreen .table-heading h1 span{display:none}.table-fullscreen .table-heading>button{height:26px;font-size:10px;padding:0 8px}.table-fullscreen .back-link{font-size:10px}}
 .table-fullscreen .mode-controls{position:sticky;top:0;z-index:8;background:var(--paper)}
+
+.model-cache-control{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}.model-cache-control small{color:var(--mantine-color-dimmed);font-size:.75rem}

@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "checks": [
+    "Lobby does not request a model",
+    "Default is off, saves no model, and real model still initializes",
+    "Explicit opt-in saves the loaded model without resetting the game",
+    "Persistent cache hit makes zero model requests and performs real inference",
+    "Forced WASM backend performs real inference from persistent model cache"
+  ],
+  "errors": [],
+  "modelRequests": 1,
+  "startedAt": "2026-11-07T16:42:07.196Z",
+  "command": "D:\\Program Files\\nodejs\\node.exe E:\\work\\MahjongAi\\scripts\\verify_arcade_model_cache.mjs artifacts/arcade-model-cache-wasm",
+  "buildFiles": {
+    "index-D7CyYkuq.js": "30eaa11d41977b3c57b3323b01b1d015cc3704714bd11678fca1d2387aecb73a",
+    "worker-DfMp25DC.js": "d8b75b28f96236e4f46577cd549d6071505bb32abb37c5f93928101dbf0d47e1"
+  }
+}

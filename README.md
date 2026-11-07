@@ -44,6 +44,8 @@ kdens3 压缩版 ONNX 与前端同仓库，位于 `web/arcade/public/models/mahj
 
 大厅只加载界面与牌桌预览。进入麻将后才加载游戏组件、Worker、运行时和模型；下载进度使用实际接收字节，初始化阶段使用不定进度。
 
+牌桌的“保存 AI 模型”默认关闭，手动开启后将该游戏模型保存到浏览器；再次进入直接读取校验后的本地模型。每个游戏独立设置，关闭只清除该游戏模型，不影响存档。详见[模型缓存说明](docs/model-cache.md)。
+
 ## 发布
 
 GitHub 仓库 Settings → Pages 选择 GitHub Actions。推送 `main` 或手动启动工作流后，构建并发布 `web/arcade/dist/`。Vite 使用相对资源路径，适配 `/xianju/` 子路径。部署权限由 GitHub 提供，不需要第三方密钥。

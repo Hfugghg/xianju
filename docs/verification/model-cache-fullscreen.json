@@ -1,0 +1,39 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-07T16:43:39.946Z",
+  "environment": "Real desktop Edge fullscreen with resized mobile viewports; orientation API outcomes simulated; no physical-phone certification",
+  "checks": [
+    {
+      "behavior": "native layout",
+      "width": 844,
+      "height": 390
+    },
+    {
+      "behavior": "native layout",
+      "width": 667,
+      "height": 375
+    },
+    {
+      "behavior": "native layout",
+      "width": 568,
+      "height": 320
+    },
+    {
+      "behavior": "native layout",
+      "width": 320,
+      "height": 568
+    },
+    {
+      "behavior": "native enter/button exit/external exit, lock/unlock, no game or model reset"
+    },
+    {
+      "behavior": "four spectator hands and real model step"
+    }
+  ],
+  "errors": [],
+  "archives": [],
+  "external": [],
+  "url": "http://127.0.0.1:4814/xianju/",
+  "smoke": true,
+  "finishedAt": "2026-11-07T16:43:46.151Z"
+}

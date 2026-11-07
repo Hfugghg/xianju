@@ -1,0 +1,26 @@
+{
+  "status": "passed",
+  "checks": [
+    "Lobby does not request a model",
+    "Default is off, saves no model, and real model still initializes",
+    "Explicit opt-in saves the loaded model without resetting the game",
+    "Persistent cache hit makes zero model requests and performs real inference",
+    "320px portrait and short landscape fullscreen controls remain reachable",
+    "Opt-out clears only this game, preserves other game opt-in/model and does not reset the game",
+    "Opt-out during download prevents a late cache write",
+    "Corrupt cache is rejected and a verified fresh model is downloaded",
+    "A stale version does not satisfy the current model and is removed after replacement",
+    "Malformed non-binary cache is replaced with a valid binary model",
+    "Two active tabs with different model versions stop writing after saving completes",
+    "Unavailable IndexedDB leaves saving off while real game inference works",
+    "Saving after initialization also works without BroadcastChannel"
+  ],
+  "errors": [],
+  "modelRequests": 10,
+  "startedAt": "2026-11-07T16:40:19.892Z",
+  "command": "D:\\Program Files\\nodejs\\node.exe E:\\work\\MahjongAi\\scripts\\verify_arcade_model_cache.mjs artifacts/arcade-model-cache-final-r3",
+  "buildFiles": {
+    "index-D7CyYkuq.js": "30eaa11d41977b3c57b3323b01b1d015cc3704714bd11678fca1d2387aecb73a",
+    "worker-DfMp25DC.js": "d8b75b28f96236e4f46577cd549d6071505bb32abb37c5f93928101dbf0d47e1"
+  }
+}

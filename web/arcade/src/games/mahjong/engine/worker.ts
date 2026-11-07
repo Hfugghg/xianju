@@ -1,3 +1,5 @@
+import { cacheState, loadCachedModel, saveCachedModel, removeCachedModel, validModel, MODEL_CACHE_CHANNEL } from '../../../shared/modelCache';
+import { mahjongModel } from '../modelSpec';
 import { isDifficulty, selectAction } from './policy';
 import type { Difficulty } from './types';
 import agent from './python/agent.py?raw';
@@ -57,7 +59,7 @@ function installWheelTransport(base: string) {
   };
 }
 let queue = Promise.resolve();
-onmessage = ({ data }) => { queue = queue.then(() => handle(data)); };
+onmessage = ({ data }) => { if(data.cacheChanged){void saveModelIfEnabled();return}queue = queue.then(() => handle(data)); };
 async function handle(data: any) {
   try {
     if (data.init) {
@@ -126,22 +128,40 @@ let currentSeed=0;
 let currentStep=0;
 let inferenceCalls = 0;
 let lastInferenceMs = 0;
-const modelBytes = 87210216;
+const modelBytes = mahjongModel.size;
+// One reference to the original model input, not an additional binary copy.
+// Allows an opt-in after initialization without fetching the model again.
+let modelPayload:Uint8Array<ArrayBuffer>|null=null;
+const cacheFailure=()=>postMessage({cacheError:true});
+async function saveModelIfEnabled(){
+  if(!modelPayload)return;
+  try{const state=await cacheState(mahjongModel);if(state.enabled&&!state.saved&&await saveCachedModel(mahjongModel,modelPayload))postMessage({cacheSaved:true})}catch{cacheFailure()}
+}
+if(typeof BroadcastChannel!=='undefined'){
+ const channel=new BroadcastChannel(MODEL_CACHE_CHANNEL);
+ channel.onmessage=event=>{if(event.data?.gameId===mahjongModel.gameId&&event.data.type==='preference')void saveModelIfEnabled()};
+}
 async function initializeModel(base:string) {
   const emit = (stage:string,loadedBytes:number) => postMessage({runtime:{stage,loadedBytes,totalBytes:modelBytes,backend}});
-  progress('正在下载 kdens3 模型…'); emit('download',0);
-  const response = await fetch(`${base}models/mahjong/kdens3/model.onnx`);
-  if (!response.ok || !response.body) throw new Error(`模型下载失败 (${response.status})`);
-  const reader = response.body.getReader();
-  const bytes = new Uint8Array(modelBytes); let loaded=0;
-  for (;;) {
-    const {done,value}=await reader.read(); if(done)break;
-    if(loaded+value.length>modelBytes)throw new Error('模型大小异常');
-    bytes.set(value,loaded);loaded+=value.length;emit('download',loaded);
+  let cached:Uint8Array<ArrayBuffer>|null=null;
+  try{
+    cached=await loadCachedModel(mahjongModel);
+    if(cached&&!await validModel(mahjongModel,cached)){await removeCachedModel(mahjongModel);cached=null;}
+  }catch{cacheFailure();cached=null;}
+  let bytes:Uint8Array<ArrayBuffer>;
+  if(cached){bytes=cached;progress('正在读取已保存的模型…');}
+  else{
+    progress('正在下载 kdens3 模型…'); emit('download',0);
+    const response = await fetch(`${base}models/mahjong/kdens3/model.onnx`);
+    if (!response.ok || !response.body) throw new Error(`模型下载失败 (${response.status})`);
+    const reader=response.body.getReader();bytes=new Uint8Array(modelBytes);let received=0;
+    for(;;){const {done,value}=await reader.read();if(done)break;if(received+value.length>modelBytes){await reader.cancel();throw new Error('模型大小异常')}bytes.set(value,received);received+=value.length;emit('download',received);}
+    if(received!==modelBytes)throw new Error('模型下载不完整');
+    if(!await validModel(mahjongModel,bytes))throw new Error('模型完整性校验失败');
   }
-  if(loaded!==modelBytes)throw new Error('模型下载不完整');
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256',bytes));
-  if(Array.from(digest,n=>n.toString(16).padStart(2,'0')).join('')!=='14b4e03d29f4ef21789842681e90930f69b2d96b970e64572900b629b8eceb94')throw new Error('模型完整性校验失败');
+  modelPayload=bytes;
+  await saveModelIfEnabled();
+  const loaded=bytes.length;
   emit('initializing',loaded); progress('正在初始化 kdens3…');
   ort=await import(/* @vite-ignore */ `${base}runtime/ort/ort.webgpu.min.mjs`);
   ort.env.wasm.numThreads=1; ort.env.wasm.wasmPaths=`${base}runtime/ort/`;
