@@ -1,0 +1,79 @@
+{
+  "targetUrl": "http://127.0.0.1:9989/xianju/",
+  "forceWasm": false,
+  "startedAt": "2026-11-07T12:01:28.475Z",
+  "status": "passed",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 28.399999999906868
+      },
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 30.100000000093132
+      },
+      "audioEvidence": {
+        "actualStepPlayback": true,
+        "mutedStepSilent": true,
+        "starts": [
+          {
+            "duration": 0.18,
+            "state": "running",
+            "startedAt": 7008,
+            "endedAfterMs": 175.4000000001397
+          },
+          {
+            "duration": 0.06997395833333334,
+            "state": "running",
+            "startedAt": 7390.199999999953,
+            "endedAfterMs": 23.100000000093132
+          }
+        ]
+      },
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 30.9000000001397
+      },
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "loadingCanBeCancelled": true,
+  "archiveRequests": [],
+  "finishedAt": "2026-11-07T12:02:11.539Z"
+}

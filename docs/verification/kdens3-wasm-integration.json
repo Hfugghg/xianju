@@ -1,0 +1,52 @@
+{
+  "targetUrl": "http://127.0.0.1:2308/xianju/",
+  "forceWasm": true,
+  "startedAt": "2026-11-07T12:03:31.443Z",
+  "status": "passed",
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "downloadEvidence": {
+        "updates": 279,
+        "maxLoaded": 87210216,
+        "totalBytes": 87210216,
+        "ready": true
+      },
+      "inferenceEvidence": {
+        "backend": "wasm",
+        "calls": 4,
+        "lastInferenceMs": 75.79999999981374
+      },
+      "audioEvidence": {
+        "actualStepPlayback": true,
+        "mutedStepSilent": true,
+        "starts": [
+          {
+            "duration": 0.18,
+            "state": "running",
+            "startedAt": 6483.5,
+            "endedAfterMs": 178
+          },
+          {
+            "duration": 0.06997395833333334,
+            "state": "running",
+            "startedAt": 6979.600000000093,
+            "endedAfterMs": 61.799999999813735
+          }
+        ]
+      },
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "archiveRequests": [],
+  "finishedAt": "2026-11-07T12:03:39.977Z"
+}

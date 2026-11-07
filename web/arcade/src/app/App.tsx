@@ -1,10 +1,27 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Button, Modal } from '@mantine/core';
 import { games } from './registry';
-export function App(){
- const [active,setActive]=useState<string|null>(null);const [about,setAbout]=useState(false);
- const game=games.find(g=>g.id===active);
- return <div className="app-shell"><header className="site-header"><a className="brand" href="#" onClick={e=>{e.preventDefault();setActive(null)}} aria-label="闲局首页"><span className="brand-seal">闲</span><span>闲局<small>XIÁN JÚ</small></span></a><nav aria-label="主导航"><button className={!game?'nav-link current':'nav-link'} onClick={()=>setActive(null)}>游戏大厅</button><button className="nav-link" onClick={()=>setAbout(true)}>关于闲局 <span>↗</span></button></nav><span className="header-note"><i/>一人入座，也成一局</span></header>
- {game?<game.Component onBack={()=>setActive(null)}/>:<main className="lobby"><section className="intro"><div className="eyebrow"><span/> 浏览器里的小小棋社</div><h1>留一点时间，<br/>给一场<span>好局。</span></h1><p>无需凑齐一桌。选一个喜欢的游戏，<br className="desktop-break"/>从容落座，慢慢过招。</p><div className="intro-bottom"><span className="intro-line"/>随时入座 · 自在开局</div><div className="stamp" aria-hidden="true">闲来<br/>一局</div></section><section className="game-section" aria-labelledby="games-heading"><div className="section-heading"><h2 id="games-heading">今日开桌 <span>01</span></h2><span>找一张喜欢的桌子</span></div>{games.map(g=><article className="featured-game" key={g.id}><div className="game-visual"><span className="preview-label">一方牌桌，四座相逢</span><g.Preview/><span className="visual-corner">東 · 南 · 西 · 北</span></div><div className="game-card-body"><div><span className="game-subtitle">{g.subtitle}</span><h3>{g.title}</h3><p>{g.description}</p><div className="game-tags"><span>{g.players}</span><span>人机对战</span></div></div><Button size="md" className="enter-button" data-testid="enter-mahjong" onClick={()=>setActive(g.id)}>进入牌桌 <span aria-hidden="true">↗</span></Button></div></article>)}<div className="coming-soon"><span className="coming-title">下一场闲局</span><span><b>將</b> 中国象棋</span><span><b>●</b> 五子棋</span><small>筹备中</small></div></section></main>}
- <footer className="site-footer"><span>闲局 <span className="footer-dot">·</span> 把日子慢下来</span><span>一间正在生长的棋牌室 <span aria-hidden="true">✳</span></span></footer><Modal opened={about} onClose={()=>setAbout(false)} title="关于闲局" centered><div className="about-copy"><h2>好局，不必赶。</h2><p>闲局是一间浏览器里的棋牌室。先从一张国标麻将桌开始，在浏览器中与 AI 从容过招。</p><p>麻将采用复式国标规则，136 张无花牌，8 番起和。运行环境在浏览器内准备，对局无需登录。</p><Button onClick={()=>setAbout(false)}>知道了</Button></div></Modal></div>
+
+export function App() {
+ const [active, setActive] = useState<string | null>(null);
+ const [about, setAbout] = useState(false);
+ const game = games.find(g => g.id === active);
+ return <div className="app-shell">
+  <header className="site-header">
+   <a className="brand" href="#" onClick={e => { e.preventDefault(); setActive(null); }} aria-label="闲局首页"><span className="brand-seal">闲</span><span>闲局</span></a>
+   <nav aria-label="主导航"><button className={!game ? 'nav-link current' : 'nav-link'} onClick={() => setActive(null)}>游戏大厅</button><button className="nav-link" onClick={() => setAbout(true)}>关于</button></nav>
+  </header>
+  {game ? <Suspense fallback={<main className="game-page" role="status">正在加载牌桌…</main>}><game.Component onBack={() => setActive(null)} /></Suspense> : <main className="lobby">
+   <section className="game-section" aria-labelledby="games-heading">
+    <div className="section-heading"><h1 id="games-heading">游戏大厅</h1></div>
+    {games.map(g => <article className="featured-game" key={g.id}>
+     <div className="game-visual"><g.Preview /></div>
+     <div className="game-card-body"><div><h2>{g.title}</h2><p>{g.description}</p><div className="game-tags"><span>{g.players}</span><span>自动对战 / 逐步观战</span></div></div><Button size="md" className="enter-button" data-testid="enter-mahjong" onClick={() => setActive(g.id)}>进入牌桌</Button></div>
+    </article>)}
+    <div className="coming-soon"><span><b>將</b> 中国象棋</span><span><b>●</b> 五子棋</span><small>待开发</small></div>
+   </section>
+  </main>}
+  <footer className="site-footer"><span>闲局</span></footer>
+  <Modal opened={about} onClose={() => setAbout(false)} title="关于闲局" centered><div className="about-copy"><p>浏览器棋牌室，对局与设置保存在本机。</p><p>国标麻将：136 张无花牌，8 番起和。AI 使用 kdens3，优先 WebGPU，可回退 WASM。</p><Button onClick={() => setAbout(false)}>关闭</Button></div></Modal>
+ </div>;
 }

@@ -148,17 +148,42 @@ def browser_dispatch(command_json):
     command = json.loads(command_json)
     if command['type'] == 'start':
         game = BrowserGame(command.get('seed'),command.get('mode','play'))
-        return json.dumps(game.view())
+        return json.dumps(model_view())
     if command['type'] == 'restore':
         replay = command['replay']
-        if len(replay['actions']) > 1000:
-            raise ValueError('存档过长')
-        game = BrowserGame(replay['seed'],replay['mode'])
-        for action in replay['actions']:
-            game.step(action)
-        return json.dumps(game.view())
+        if replay.get('policy') != 'kdens3-v1' or len(replay['actions']) > 1000:
+            raise ValueError('Legacy replay is incompatible with kdens3; discard the saved game to start')
+        game = BrowserGame(replay['seed'], replay['mode'])
+        for actions in replay['actions']:
+            commit_actions(actions)
+        return json.dumps(model_view())
     if game is None:
-        raise RuntimeError('尚未开始牌局')
-    if command['type'] == 'auto':
-        return json.dumps(game.auto_step())
-    return json.dumps(game.step(command.get('action')))
+        raise RuntimeError('Invalid game command')
+    if command['type'] == 'pending':
+        return json.dumps([{'seat': seat, 'obs': np.asarray(obs['observation'], dtype=np.float32).reshape(-1).tolist(), 'mask': np.asarray(obs['action_mask'], dtype=bool).tolist()} for seat, obs in game.env.obs.items()] if not game.env.done else [])
+    if command['type'] == 'commit':
+        commit_actions(command['actions'])
+        return json.dumps(model_view())
+    raise ValueError('Invalid game command')
+
+
+def commit_actions(actions):
+    if game.env.done:
+        raise ValueError('Game finished')
+    expected = {str(seat) for seat in game.env.obs}
+    if set(actions) != expected:
+        raise ValueError('Invalid model actions')
+    chosen = {}
+    for seat, observation in game.env.obs.items():
+        action = actions[str(seat)]
+        if type(action) is not int or not 0 <= action < 235 or not observation['action_mask'][action]:
+            raise ValueError('Invalid model actions')
+        chosen[game.env.agent_names[seat]] = action
+    game.env.step(chosen)
+    game.actions.append(actions)
+
+
+def model_view():
+    view = game.view()
+    view['replay']['policy'] = 'kdens3-v1'
+    return view

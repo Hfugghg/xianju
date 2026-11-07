@@ -27,7 +27,9 @@ class BrowserGameTests(unittest.TestCase):
     def test_auto_commands_replay_exactly(self):
         browser_dispatch(json.dumps({'type':'start','seed':42,'mode':'play'}))
         for _ in range(12):
-            view = json.loads(browser_dispatch('{"type":"auto"}'))
+            pending = json.loads(browser_dispatch('{"type":"pending"}'))
+            actions = {str(item['seat']): next(i for i, legal in enumerate(item['mask']) if legal) for item in pending}
+            view = json.loads(browser_dispatch(json.dumps({'type':'commit','actions':actions})))
             restored = json.loads(browser_dispatch(json.dumps({'type':'restore','replay':view['replay']})))
             self.assertEqual(view, restored)
 
@@ -136,9 +138,23 @@ class BrowserGameTests(unittest.TestCase):
     def test_replay_restores_exact_view(self):
         browser_dispatch(json.dumps({'type':'start', 'seed':42, 'mode':'spectate'}))
         for _ in range(20):
-            view = json.loads(browser_dispatch('{"type":"advance"}'))
+            pending = json.loads(browser_dispatch('{"type":"pending"}'))
+            actions = {str(item['seat']): next(i for i, legal in enumerate(item['mask']) if legal) for item in pending}
+            view = json.loads(browser_dispatch(json.dumps({'type':'commit','actions':actions})))
         restored = json.loads(browser_dispatch(json.dumps({'type':'restore', 'replay':view['replay']})))
         self.assertEqual(view, restored)
+
+    def test_old_replay_rejected(self):
+        with self.assertRaises(ValueError):
+            browser_dispatch(json.dumps({'type':'restore','replay':{'seed':42,'mode':'play','actions':[]}}))
+
+    def test_model_commit_rejects_missing_seats_and_illegal_ids(self):
+        browser_dispatch(json.dumps({'type':'start','seed':42,'mode':'spectate'}))
+        with self.assertRaises(ValueError):
+            browser_dispatch(json.dumps({'type':'commit','actions':{}}))
+        pending = json.loads(browser_dispatch('{"type":"pending"}'))
+        with self.assertRaises(ValueError):
+            browser_dispatch(json.dumps({'type':'commit','actions':{str(item['seat']):999 for item in pending}}))
 
     def test_invalid_action_rejected(self):
         game = BrowserGame(42)

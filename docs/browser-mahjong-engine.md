@@ -20,11 +20,17 @@ Pyodide 0.27.7 的 loader 使用 fetch SRI SHA-256；该哈希属于 wheel 原�
 
 ## API
 
-`createMahjongClient(progress)` → `start(seed?, mode?)`, `action(actionId)`, `advance()`, `restore(replay)`, `dispose()`。模式为 `play` 或 `spectate`。`advance()` 每次推进一个环境决策 tick，观战时由界面手动触发，不自动跑完整局。
+`createMahjongClient(progress)` → `start(seed?, mode?)`, `advance()`, `restore(replay)`, `dispose()`。模式为 `play` 或 `spectate`。`advance()` 每次推进一个环境决策 tick，观战时由界面手动触发，不自动跑完整局。
 
-`GameView.replay` 保存确定性种子、模式和动作序列，可写 localStorage；恢复时从起始牌墙重放，不反序列化 pickle。当前内置启发式策略复用上游向听数，选择只依赖当前 AI 的自身手牌与其观测，不读取对手暗手。人机模式视图不导出对手暗手；观战模式可显示四家手牌，但该透视不传给策略。
+`GameView.replay` 保存种子、模式、`policy: 'kdens3-v1'` 和每一步各席实际动作，恢复时重放已记录动作，不重新推理。旧启发式存档明确拒绝，用户可保留重试或明确放弃。动作需符合当时各席合法 mask，最多 1000 步。
+
+当前四席均使用已发布的 kdens3 三学生集成 ONNX。Worker 向 Python 请求各席独立的 38×4×9 观测和 235 动作 mask，异步调用 ONNX Runtime 后，提交经过合法性校验的动作。观战透视只用于界面，不传给模型。上游编码器文件与已验证模型来源的编码器 SHA-256 完全相同。
+
+进入麻将后才下载模型，stream 字节累积进度以已知 87,210,216 字节为分母，完成后校验固定 SHA-256。优先 WebGPU，不可用时使用单线程 WASM；模型失败不会改用启发式。`GameView.ai` 提供真实后端、推理调用数及最近耗时。恢复动作不计作推理。ORT 的 MJS/WASM 全部同源。初始化可由 `createMahjongClient` 的第三参数 AbortSignal 终止。
 
 ## 验证
+
+本次实际浏览器集成验收记录：`verification/kdens3-integration.json`（WebGPU、1440/390/320px、大厅无 AI 请求、退出取消、完整自动结算、实际步进音效），`verification/kdens3-wasm-integration.json`（模拟 WebGPU 不可用，WASM 实际推理、真实下载字节及音效完整播放）。音效默认关闭，开启后才播放。14 项原生测试和 TypeScript/生产构建通过。以下段落保留最初规则引擎验收背景。
 
 本地 Python 使用真实 PyMahjongGB 检查：12 个固定种子全 AI 对局能在 400 tick 内结束、结算零和；正常玩家等待/动作 mask、无暗手泄露、非法动作拒绝、种子与动作恢复完全一致。浏览器 WASM scorer 的运行验证由主线程集成后执行，不能将 Python 结果冒充浏览器通过。
 

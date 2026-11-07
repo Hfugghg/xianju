@@ -1,0 +1,20 @@
+{
+  "package": "onnxruntime-web",
+  "version": "1.31.1",
+  "source": "https://github.com/microsoft/onnxruntime",
+  "license": "MIT",
+  "files": [
+    {
+      "name": "ort.webgpu.min.mjs",
+      "sha256": "329cd956772397a1aedd668e911195d39afefb182f6fc14aafa4f08ac8d8f379"
+    },
+    {
+      "name": "ort-wasm-simd-threaded.asyncify.mjs",
+      "sha256": "59cf781530e1a16df2a291d78798e3ec1152467edaec402d6f9599d85047c302"
+    },
+    {
+      "name": "ort-wasm-simd-threaded.asyncify.wasm",
+      "sha256": "ca319e9539cd0f1e291cf56074760121eaf39650f5dbf84b6e52c07f4b2944ec"
+    }
+  ]
+}

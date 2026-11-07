@@ -1,6 +1,6 @@
 # 闲局 · 浏览器棋牌室
 
-React + TypeScript + Vite + Mantine 静态网页，麻将游戏独立放在 `src/games/mahjong/`。规则为复式国标：136 张无花牌、8 番起和。当前使用基础启发式 AI，尚未接入 kdens3 / ONNX 模型。无账号或服务端数据库。
+React + TypeScript + Vite + Mantine 静态网页，麻将游戏独立放在 `src/games/mahjong/`。规则为复式国标：136 张无花牌、8 番起和。当前通过 ONNX Runtime Web 使用 kdens3 ONNX 模型，优先 WebGPU，初始化失败回退 WASM。无账号或服务端数据库。
 
 ## 本地运行
 
@@ -25,11 +25,11 @@ src/games/mahjong/      麻将组件、牌面、交互状态、样式与类型
 
 ## 玩法
 
-自动对战：默认暂停，打开手牌旁的「开始自动对战」开关后，四家均由基础 AI 托管，包含本席东家，无需用户选牌或出牌。关闭开关即暂停；若已有一步正在计算，该步完成后不再继续。结束显示得分和番种。重新开局或切换模式会开始新牌局并关闭自动开关；点击当前模式不会重置牌局。
+自动对战：默认暂停，打开手牌旁的「自动对战」开关后，四家均由 kdens3 托管，包含本席东家，无需用户选牌或出牌。关闭开关即暂停；若已有一步正在计算，该步完成后不再继续。结束显示得分和番种。重新开局或切换模式会开始新牌局并关闭自动开关；点击当前模式不会重置牌局。
 
 逐步观战：四家均由 AI 控制并显示手牌，只有点击「计算下一步」才推进一个引擎步骤；不会自动连续计算。一次步骤可能仅处理摸牌或等待响应，不一定产生弃牌。
 
-音效通过 Howler 播放两段自制合成短 WAV，非真实麻将录音。默认关闭，可由用户开启，没有背景音乐。
+音效通过 Howler 播放两段自制合成短 WAV，非真实麻将录音。默认关闭，可由用户开启。对局实际推进播放落牌提示，结算播放提示音；关闭音效或离开游戏停止声音，没有背景音乐。
 
 ## 本地数据
 
@@ -37,12 +37,12 @@ src/games/mahjong/      麻将组件、牌面、交互状态、样式与类型
 
 ## 静态运行时与部署
 
-Python 状态机在 Web Worker 中通过 Pyodide 运行，NumPy 及 Python 标准库均部署于 `public/runtime/pyodide/`。国标算番使用 `public/runtime/mcr/scorer.mjs` 与 `scorer.wasm`，源版本和编译命令见同目录 `sources.json`。构建时 Vite 将 `public/` 原样复制到 `dist/`，发布时必须包含整个运行时目录，不能只上传 JS/CSS。首次打开会下载本网站提供的运行时，当前不是离线 PWA。
+Python 状态机在 Web Worker 中通过 Pyodide 运行，NumPy 及 Python 标准库均部署于 `public/runtime/pyodide/`。国标算番使用 `public/runtime/mcr/scorer.mjs` 与 `scorer.wasm`，源版本和编译命令见同目录 `sources.json`。构建时 Vite 将 `public/` 原样复制到 `dist/`，发布时必须包含整个运行时目录，不能只上传 JS/CSS。大厅不启动麻将 Worker 或加载模型；进入游戏后才加载游戏组件、运行时与模型。下载进度来自实际接收字节，未知总量或初始化阶段显示不定进度。界面展示实际推理后端、调用数和最近一次推理耗时。当前不是离线 PWA。
 
 本地发布前执行项目根目录的 `scripts/vendor_arcade_runtime.py`（以该脚本当前参数为准）准备 Pyodide/NumPy，并保留已编译的 mcr 运行时与许可证。若移动站点路径，保持 Vite 相对 base 和 `runtime/` 相对位置。GitHub Pages 发布整个 `dist/`，使用 HTTPS 或 localhost。第三方来源与许可证见 `THIRD_PARTY_NOTICES.md`。
 
-## 后续接入
+## 游戏接口
 
-`engine/client.ts` 提供异步 start / action / advance / restore / dispose；`engine/types.ts` 定义视图与 JSON replay。`LiveGame.tsx` 根据裁判输出渲染并仅发送合法 action id。新 AI 应通过麻将目录内独立适配接入，不能绕过规则层直接更新手牌。
+`engine/client.ts` 提供异步 start / action / advance / restore / dispose；`engine/types.ts` 定义视图与 JSON replay。`LiveGame.tsx` 根据裁判输出渲染并仅发送合法 action id。kdens3 通过麻将目录内的 ONNX 适配接入，仍由规则层裁判推进牌局。
 
 按键与弹窗使用 Mantine；自制牌面与牌桌使用 CSS。支持键盘焦点、选中状态及 `prefers-reduced-motion`；移动端手牌区独立横向滚动。
