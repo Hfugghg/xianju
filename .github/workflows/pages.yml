@@ -27,6 +27,8 @@ jobs:
           cache-dependency-path: web/arcade/package-lock.json
       - name: Install locked dependencies
         run: npm ci --prefix web/arcade
+      - name: Check formatting
+        run: npm run format:check --prefix web/arcade
       - name: Build static site
         run: npm run build --prefix web/arcade
       - uses: actions/configure-pages@v6
