@@ -1,3 +1,5 @@
+import { isDifficulty, selectAction } from './policy';
+import type { Difficulty } from './types';
 import agent from './python/agent.py?raw';
 import env from './python/env.py?raw';
 import envFixed from './python/env_fixed.py?raw';
@@ -99,14 +101,18 @@ async function handle(data: any) {
     let view;
     if (command.type === 'start' || command.type === 'restore') {
       view = JSON.parse(dispatch(JSON.stringify(command)));
-      inferenceCalls = 0; lastInferenceMs = 0;
+      inferenceCalls = 0; lastInferenceMs = 0; difficulty = 'expert';
     } else if (command.type === 'advance' || command.type === 'auto') {
+      const requestedDifficulty = command.difficulty ?? 'expert';
+      if(!isDifficulty(requestedDifficulty))throw new Error('未知 AI 难度');
+      difficulty=requestedDifficulty;
       const pending = JSON.parse(dispatch(JSON.stringify({type:'pending'})));
       const actions: Record<string, number> = {};
       for (const item of pending) actions[String(item.seat)] = await infer(item);
       view = JSON.parse(dispatch(JSON.stringify({type:'commit', actions})));
     } else throw new Error('未知对局命令');
-    view.ai = {model:'kdens3',backend,inferenceCalls,lastInferenceMs};
+    currentSeed=view.replay.seed;currentStep=view.replay.actions.length;
+    view.ai = {model:'kdens3',backend,inferenceCalls,lastInferenceMs,difficulty};
     postMessage({ id: data.id, view });
   } catch (error) {
     postMessage({ id: data.id, error: String(error) });
@@ -115,6 +121,9 @@ async function handle(data: any) {
 let ort: any;
 let session: any;
 let backend: 'webgpu'|'wasm' = 'wasm';
+let difficulty:Difficulty = 'expert';
+let currentSeed=0;
+let currentStep=0;
 let inferenceCalls = 0;
 let lastInferenceMs = 0;
 const modelBytes = 87210216;
@@ -156,9 +165,7 @@ async function infer(item:any):Promise<number> {
     if(backend==='webgpu'&&outputs[session.outputNames[0]].location!=='gpu-buffer')throw new Error('WebGPU 未返回 GPU 输出');
     const scores=await outputs[session.outputNames[0]].getData();
     if(scores.length!==235 || Array.from(scores as Float32Array).some(value=>!Number.isFinite(value)))throw new Error('模型输出异常');
-    let best=-1;
-    for(let i=0;i<235;i++)if(item.mask[i]&&(best<0||scores[i]>scores[best]))best=i;
-    if(best<0)throw new Error('模型没有合法动作');
+    const best=selectAction(scores,item.mask,difficulty,currentSeed,currentStep,item.seat);
     inferenceCalls++;lastInferenceMs=performance.now()-started;
     return best;
   } finally { observation.dispose();mask.dispose();if(outputs)Object.values(outputs).forEach((tensor:any)=>tensor.dispose()); }

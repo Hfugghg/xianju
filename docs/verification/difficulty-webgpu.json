@@ -1,0 +1,119 @@
+{
+  "targetUrl": "http://127.0.0.1:9971/xianju/",
+  "forceWasm": false,
+  "startedAt": "2026-11-07T12:28:10.751Z",
+  "status": "passed",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "downloadEvidence": {
+        "updates": 226,
+        "maxLoaded": 87210216,
+        "totalBytes": 87210216,
+        "ready": true
+      },
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 28.699999999720603
+      },
+      "difficultyEvidence": [],
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "downloadEvidence": {
+        "updates": 261,
+        "maxLoaded": 87210216,
+        "totalBytes": 87210216,
+        "ready": true
+      },
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 27.40000000037253
+      },
+      "audioEvidence": {
+        "actualStepPlayback": true,
+        "mutedStepSilent": true,
+        "starts": [
+          {
+            "duration": 0.18,
+            "state": "running",
+            "startedAt": 7521.100000000093,
+            "endedAfterMs": 176.1999999997206
+          },
+          {
+            "duration": 0.06997395833333334,
+            "state": "running",
+            "startedAt": 7883,
+            "endedAfterMs": 64.1999999997206
+          }
+        ]
+      },
+      "difficultyEvidence": [
+        {
+          "difficulty": "easy",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        },
+        {
+          "difficulty": "normal",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        },
+        {
+          "difficulty": "expert",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        }
+      ],
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    },
+    {
+      "width": 320,
+      "height": 568,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "downloadEvidence": {
+        "updates": 153,
+        "maxLoaded": 87210216,
+        "totalBytes": 87210216,
+        "ready": true
+      },
+      "inferenceEvidence": {
+        "backend": "webgpu",
+        "calls": 4,
+        "lastInferenceMs": 28.100000000093132
+      },
+      "difficultyEvidence": [],
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "loadingCanBeCancelled": true,
+  "archiveRequests": [],
+  "finishedAt": "2026-11-07T12:28:50.469Z"
+}

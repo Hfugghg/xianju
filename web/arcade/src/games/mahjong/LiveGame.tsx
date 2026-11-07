@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Alert, Button, Loader, Modal, Switch } from '@mantine/core';
 import { createMahjongClient, type GameView, type MahjongClient } from './engine/client';
-import type { RuntimeProgress } from './engine/types';
+import type { Difficulty, RuntimeProgress } from './engine/types';
 import { TileFace, Wall } from './MahjongGame';
 import { tileName, type Tile } from './types';
 import { enableSound, playSound } from '../../shared/audio';
@@ -14,6 +14,7 @@ function parseTile(code:string,index=0):Tile {
 const names=['东家 AI','月白','竹间','松风'];
 const winds=['东','南','西','北'];
 const sides=['bottom','right','top','left'];
+const difficultyNames:Record<Difficulty,string>={easy:'轻松',normal:'标准',expert:'高手'};
 export function LiveGame({onBack}:{onBack:()=>void}) {
  const client=useRef<MahjongClient|null>(null);
  const [view,setView]=useState<GameView|null>(null);
@@ -27,6 +28,7 @@ export function LiveGame({onBack}:{onBack:()=>void}) {
  const [autoPlay,setAutoPlay]=useState(false);
  const [sound,setSound]=useState(()=>readLocal('sound',false));
  const [fast,setFast]=useState(()=>readLocal('fast',false));
+ const [difficulty,setDifficulty]=useState(()=>readLocal<Difficulty>('difficulty','expert'));
  const [records,setRecords]=useState<LocalRecord[]>(()=>readLocal('records',[]));
  const resultSaved=useRef(false);
  const abandonSave=useRef(false);
@@ -56,17 +58,17 @@ export function LiveGame({onBack}:{onBack:()=>void}) {
   const timer=setTimeout(()=>{
    if(!client.current)return;
    setBusy(true);setStatus('AI 正在思考…');
-   client.current.autoAdvance().then(next=>{applyStep(next);setBusy(false)}).catch(reason=>{setError(String(reason));setBusy(false)});
+   client.current.autoAdvance(difficulty).then(next=>{applyStep(next);setBusy(false)}).catch(reason=>{setError(String(reason));setBusy(false)});
   },fast?80:350);
   return ()=>clearTimeout(timer);
- },[view,busy,error,fast,mode,autoPlay]);
+ },[view,busy,error,fast,mode,autoPlay,difficulty]);
  useEffect(()=>{if(view?.phase==='finished'){setAutoPlay(false);setResultOpen(true);if(view.result&&!resultSaved.current){resultSaved.current=true;const next=[{date:new Date().toISOString(),winner:view.result.winner,scores:view.result.scores},...records].slice(0,30);setRecords(next);save('records',next)}}},[view?.phase]);
  function applyStep(next:GameView){
   if(view&&view.phase==='playing'&&next.replay.seed===view.replay.seed&&next.replay.mode===view.replay.mode&&next.replay.actions.length>view.replay.actions.length)playSound(next.phase==='finished'?'chime':'tap');
   setView(next);
  }
  async function switchMode(next:'play'|'spectate'){if(!client.current||busy||mode===next)return;setAutoPlay(false);setBusy(true);setMode(next);setResultOpen(false);resultSaved.current=false;try{setView(await client.current.start(undefined,next))}catch(reason){setError(String(reason))}finally{setBusy(false)}}
- async function nextStep(){if(!client.current||busy)return;setBusy(true);setStatus('正在计算一步…');try{applyStep(await client.current.advance())}catch(reason){setError(String(reason))}finally{setBusy(false)}}
+ async function nextStep(){if(!client.current||busy)return;setBusy(true);setStatus('正在计算一步…');try{applyStep(await client.current.advance(difficulty))}catch(reason){setError(String(reason))}finally{setBusy(false)}}
  async function reset(){if(!client.current||busy)return;setAutoPlay(false);setBusy(true);setResultOpen(false);setError('');resultSaved.current=false;try{setView(await client.current.start(undefined,mode))}catch(reason){setError(String(reason))}finally{setBusy(false)}}
  
  return <main className="game-page"><div className="table-heading"><div><button className="back-link" data-testid="back-to-lobby" onClick={onBack}>← 返回大厅</button><h1>国标麻将 <span>复式国标 · 136 张无花</span></h1></div><Button variant="outline" data-testid="reset-table" disabled={busy||!view} onClick={reset}>↻ 重新开局</Button></div>
@@ -79,6 +81,6 @@ export function LiveGame({onBack}:{onBack:()=>void}) {
  <span className="table-wordmark">闲 局</span></div>
  <div className="meld-summary">{view.players.some(player=>player.packs.length>0)&&view.players.map(player=>player.packs.length>0&&<div key={player.seat} className="player-melds"><span>{names[player.seat]}副露</span>{player.packs.map((pack,i)=><span className="meld-group" key={i}><small>{pack.concealed?'暗杠':pack.type==='CHI'?'吃':pack.type==='PENG'?'碰':'杠'}</small>{(pack.type==='CHI'?[-1,0,1].map(offset=>pack.tile[0]+(Number(pack.tile.slice(1))+offset)):Array(pack.type==='GANG'?4:3).fill(pack.tile)).map((code,j)=><span className="discarded-tile" key={j}>{code==='CONCEALED'||(pack.concealed&&mode==='play'&&player.seat===0&&(j===0||j===3))?<span className="concealed-tile" aria-label="隐藏暗杠牌背"/>:<TileFace tile={parseTile(code,j)}/>}</span>)}</span>)}</div>)}</div>
  {mode==='spectate'&&<div className="spectator-hands">{view.players.map(player=><section data-testid="ai-hand" key={player.seat}><h3>{names[player.seat]} · {winds[player.seat]}家 AI</h3><div>{('hand' in player?(player.hand as string[]):[]).map((code,i)=><span className="discarded-tile" key={i} aria-label={tileName(parseTile(code))}><TileFace tile={parseTile(code,i)}/></span>)}</div></section>)}</div>}</section>
- <aside className="table-sidebar"><h2>对局记录</h2><label className="speed-setting"><input type="checkbox" checked={fast} onChange={event=>{setFast(event.target.checked);save('fast',event.target.checked)}}/> 快速 AI 回合</label><p className="local-record-count">本机 {records.length} 局</p><div className="game-log" aria-label="对局记录">{view.log.slice(-8).map((entry,i)=><p key={i}>{entry}</p>)}</div></aside><div className="action-dock" data-testid="action-dock">{view.ai&&<div className="ai-runtime-info" data-testid="ai-runtime-info" data-model={view.ai.model} data-backend={view.ai.backend} data-inference-calls={view.ai.inferenceCalls} data-last-inference-ms={view.ai.lastInferenceMs}>{view.ai.model} · {view.ai.backend==='webgpu'?'WebGPU':'WASM'} · {view.ai.inferenceCalls>0?`${view.ai.lastInferenceMs.toFixed(1)} ms · ${view.ai.inferenceCalls} 次推理`:'尚未推理'}</div>}{mode==='play'&&<div className="hand-panel"><div className="hand-top"><span><i/>东家 AI</span><small>{view.hand.length} 张手牌</small></div><div className="hand-scroll"><div className="player-hand">{view.hand.map((code,i)=><span className="hand-tile readonly-tile" key={code+i} aria-label={tileName(parseTile(code))}><TileFace tile={parseTile(code,i)}/></span>)}</div></div></div>}<div className="dock-controls"><div className="dock-status" data-testid="turn-status" role="status"><strong>{view.phase==='finished'?'本局已结束':error?'牌桌暂停，请处理错误':mode==='spectate'?(busy?'正在计算一步…':'已暂停'):autoPlay?(busy?'AI 正在计算…':`${names[view.currentPlayer]} 正在行动`):'已暂停'}</strong><small>{mode==='spectate'?'四家明手':'四家 AI 托管'}</small></div>{mode==='play'?<Switch data-testid="auto-play-toggle" checked={autoPlay} disabled={!!error||view.phase==='finished'} onChange={event=>setAutoPlay(event.currentTarget.checked)} label="自动对战" size="md"/>:<Button data-testid="next-step" disabled={busy||view.phase==='finished'||!!error} onClick={nextStep}>计算下一步</Button>}{view.phase==='finished'&&<Button onClick={()=>setResultOpen(true)}>查看结算</Button>}</div></div></div>}
+ <aside className="table-sidebar"><h2>对局记录</h2><label className="speed-setting"><input type="checkbox" checked={fast} onChange={event=>{setFast(event.target.checked);save('fast',event.target.checked)}}/> 快速 AI 回合</label><p className="local-record-count">本机 {records.length} 局</p><div className="game-log" aria-label="对局记录">{view.log.slice(-8).map((entry,i)=><p key={i}>{entry}</p>)}</div></aside><div className="action-dock" data-testid="action-dock"><div className="ai-settings-row">{view.ai&&<div className="ai-runtime-info" data-testid="ai-runtime-info" data-difficulty={view.ai.difficulty} data-model={view.ai.model} data-backend={view.ai.backend} data-inference-calls={view.ai.inferenceCalls} data-last-inference-ms={view.ai.lastInferenceMs}>{view.ai.model} · {view.ai.inferenceCalls>0?`${difficultyNames[view.ai.difficulty]} · `:''}{view.ai.backend==='webgpu'?'WebGPU':'WASM'} · {view.ai.inferenceCalls>0?`${view.ai.lastInferenceMs.toFixed(1)} ms · ${view.ai.inferenceCalls} 次推理`:'尚未推理'}</div>}<label className="difficulty-control">难度<select data-testid="ai-difficulty" value={difficulty} disabled={busy||!!error||view.phase==='finished'} onChange={event=>{const next=event.currentTarget.value;if(next==='easy'||next==='normal'||next==='expert'){setDifficulty(next);save('difficulty',next)}}} aria-label="AI 难度" title="高手为原版 kdens3；切换后下一步生效"><option value="easy">轻松</option><option value="normal">标准</option><option value="expert">高手</option></select></label></div>{mode==='play'&&<div className="hand-panel"><div className="hand-top"><span><i/>东家 AI</span><small>{view.hand.length} 张手牌</small></div><div className="hand-scroll"><div className="player-hand">{view.hand.map((code,i)=><span className="hand-tile readonly-tile" key={code+i} aria-label={tileName(parseTile(code))}><TileFace tile={parseTile(code,i)}/></span>)}</div></div></div>}<div className="dock-controls"><div className="dock-status" data-testid="turn-status" role="status"><strong>{view.phase==='finished'?'本局已结束':error?'牌桌暂停，请处理错误':mode==='spectate'?(busy?'正在计算一步…':'已暂停'):autoPlay?(busy?'AI 正在计算…':`${names[view.currentPlayer]} 正在行动`):'已暂停'}</strong><small>{mode==='spectate'?'四家明手':'四家 AI 托管'}</small></div>{mode==='play'?<Switch data-testid="auto-play-toggle" checked={autoPlay} disabled={!!error||view.phase==='finished'} onChange={event=>setAutoPlay(event.currentTarget.checked)} label="自动对战" size="md"/>:<Button data-testid="next-step" disabled={busy||view.phase==='finished'||!!error} onClick={nextStep}>计算下一步</Button>}{view.phase==='finished'&&<Button onClick={()=>setResultOpen(true)}>查看结算</Button>}</div></div></div>}
  <Modal opened={resultOpen&&!!view?.result} onClose={()=>setResultOpen(false)} title="本局结算" centered><div className="result-panel"><h2>{view?.result?.winner==null?'流局':`${names[view.result.winner]}和牌`}</h2>{view?.result?.scores.map((score,i)=><div className="result-score" key={i}><span>{names[i]} · {winds[i]}家</span><strong>{score>0?'+':''}{score}</strong></div>)}<div className="result-fans">{view?.result?.fans.map((fan,i)=><p key={i}>{fan.name} <span>{fan.points} 番{fan.count>1?` × ${fan.count}`:''}</span></p>)}</div><Button fullWidth disabled={busy} onClick={reset}>再来一局</Button></div></Modal></main>;
 }

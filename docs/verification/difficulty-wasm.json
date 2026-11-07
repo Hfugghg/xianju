@@ -1,0 +1,72 @@
+{
+  "targetUrl": "http://127.0.0.1:11442/xianju/",
+  "forceWasm": true,
+  "startedAt": "2026-11-07T12:28:55.622Z",
+  "status": "passed",
+  "viewports": [
+    {
+      "width": 390,
+      "height": 844,
+      "lobbyDoesNotLoadAI": true,
+      "model": "kdens3",
+      "downloadEvidence": {
+        "updates": 246,
+        "maxLoaded": 87210216,
+        "totalBytes": 87210216,
+        "ready": true
+      },
+      "inferenceEvidence": {
+        "backend": "wasm",
+        "calls": 4,
+        "lastInferenceMs": 76.60000000009313
+      },
+      "audioEvidence": {
+        "actualStepPlayback": true,
+        "mutedStepSilent": true,
+        "starts": [
+          {
+            "duration": 0.18,
+            "state": "running",
+            "startedAt": 6505.299999999814,
+            "endedAfterMs": 174.10000000009313
+          },
+          {
+            "duration": 0.06997395833333334,
+            "state": "running",
+            "startedAt": 7013.0999999996275,
+            "endedAfterMs": 66.20000000018626
+          }
+        ]
+      },
+      "difficultyEvidence": [
+        {
+          "difficulty": "easy",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        },
+        {
+          "difficulty": "normal",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        },
+        {
+          "difficulty": "expert",
+          "appliedToActualStep": true,
+          "persisted": true,
+          "historyPreserved": true
+        }
+      ],
+      "autoStartsWithoutHuman": true,
+      "pause": true,
+      "manualStep": true,
+      "controlsInViewport": true,
+      "completedAutoGame": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "archiveRequests": [],
+  "finishedAt": "2026-11-07T12:29:04.809Z"
+}

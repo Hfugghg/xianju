@@ -30,6 +30,12 @@ Pyodide 0.27.7 的 loader 使用 fetch SRI SHA-256；该哈希属于 wheel 原�
 
 ## 验证
 
+### 页面难度
+
+四席共用轻松、标准、高手设置，默认高手；下一步生效，设置保存本机，不改已有回放动作、不重开或重载模型。高手保持原版合法动作 argmax（同分取较小动作编号）；标准以 85% 概率保留首选，否则在第 2–3 候选按模型概率采样；轻松以 45% 概率保留首选，否则在第 2–5 候选采样。低档只选合法动作，合法胡牌直接胡；单合法动作直接返回。随机数由牌局种子、步数、席位和档位独立派生，不消耗牌墙随机流。模型本身未改变，不增加推理或搜索；档位没有经过胜率标定，不代表高手超过原版。
+
+策略测试：`node scripts/test_difficulty.mjs`；可选附加原版 golden fixtures 路径。此次 100 个 golden 动作完全一致，10000 个种子下标准首选 8516 次、轻松 4442 次；这是选择规则验证，不是对战胜率。浏览器证据：`verification/difficulty-webgpu.json`、`verification/difficulty-wasm.json`，包含三个档位实际步进、存储、历史不变与模型不重复加载；WebGPU 覆盖 1440/390/320px 和整局结算。
+
 本次实际浏览器集成验收记录：`verification/kdens3-integration.json`（WebGPU、1440/390/320px、大厅无 AI 请求、退出取消、完整自动结算、实际步进音效），`verification/kdens3-wasm-integration.json`（模拟 WebGPU 不可用，WASM 实际推理、真实下载字节及音效完整播放）。音效默认关闭，开启后才播放。14 项原生测试和 TypeScript/生产构建通过。以下段落保留最初规则引擎验收背景。
 
 本地 Python 使用真实 PyMahjongGB 检查：12 个固定种子全 AI 对局能在 400 tick 内结束、结算零和；正常玩家等待/动作 mask、无暗手泄露、非法动作拒绝、种子与动作恢复完全一致。浏览器 WASM scorer 的运行验证由主线程集成后执行，不能将 Python 结果冒充浏览器通过。

@@ -38,8 +38,8 @@ export async function createMahjongClient(onProgress?: (text: string) => void, o
   return {
     start: (seed, mode='play') => send({ type: 'start', seed:seed ?? Math.floor(Math.random()*2147483647), mode }),
     restore: replay => send({ type:'restore', replay }),
-    advance: () => send({ type: 'advance' }),
-    autoAdvance: () => send({ type: 'auto' }),
+    advance: (difficulty='expert') => send({ type: 'advance', difficulty }),
+    autoAdvance: (difficulty='expert') => send({ type: 'auto', difficulty }),
     dispose: () => { signal?.removeEventListener('abort',abort); worker.terminate(); pending.forEach(request => request.reject(new Error('牌局已关闭'))); pending.clear(); },
   };
 }
