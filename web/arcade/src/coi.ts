@@ -7,19 +7,25 @@ const RELOAD_KEY = 'xianju.coi.reloaded';
 const TIMEOUT_MS = 4000;
 
 function readFlag(): boolean {
-  try { return sessionStorage.getItem(RELOAD_KEY) === '1'; } catch { return false; }
+  try {
+    return sessionStorage.getItem(RELOAD_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 function setFlag(value: boolean): void {
   try {
     if (value) sessionStorage.setItem(RELOAD_KEY, '1');
     else sessionStorage.removeItem(RELOAD_KEY);
-  } catch { /* storage disabled; isolation still works without the loop guard */ }
+  } catch {
+    /* storage disabled; isolation still works without the loop guard */
+  }
 }
 
 function waitForController(): Promise<boolean> {
   if (navigator.serviceWorker.controller) return Promise.resolve(true);
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     const finish = () => {
       clearTimeout(timer);
       navigator.serviceWorker.removeEventListener('controllerchange', finish);
@@ -51,7 +57,7 @@ export async function ensureCrossOriginIsolation(): Promise<void> {
         await navigator.serviceWorker.ready;
         await waitForController();
       })(),
-      new Promise<void>(resolve => setTimeout(resolve, TIMEOUT_MS + 1000)),
+      new Promise<void>((resolve) => setTimeout(resolve, TIMEOUT_MS + 1000)),
     ]);
   } catch {
     return; // Registration failed; run without isolation rather than block.
