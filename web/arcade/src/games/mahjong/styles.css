@@ -11,3 +11,35 @@
 
 .ai-load-progress{width:min(320px,100%);display:grid;gap:8px}.ai-load-progress progress{width:100%;accent-color:var(--forest)}.ai-runtime-info{font-size:10px;color:var(--muted);margin-bottom:6px;overflow-wrap:anywhere}
 .ai-settings-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}.ai-settings-row .ai-runtime-info{flex:1;min-width:0;margin:0}.difficulty-control{display:flex;align-items:center;gap:5px;flex-shrink:0;color:var(--muted);font-size:10px}.difficulty-control select{font:inherit;font-size:12px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:4px;min-height:28px}.difficulty-control select:focus-visible{outline:2px solid var(--forest);outline-offset:2px}.difficulty-control select:disabled{opacity:.55}
+/* Fullscreen keeps the existing game and worker alive. */
+.fullscreen-hint{align-self:center;font-size:10px;color:var(--muted)}
+.table-fullscreen{position:fixed;inset:0;z-index:200;width:100%;height:100dvh;max-width:none;margin:0;background:var(--paper);padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overflow:auto;display:flex;flex-direction:column;animation:none}
+.table-fullscreen:fullscreen{width:100%;height:100%;background:var(--paper)}
+.table-fullscreen .table-heading{flex-shrink:0;margin:0 0 5px}.table-fullscreen .table-heading h1{font-size:18px;margin:3px 0}.table-fullscreen .mode-controls{flex-shrink:0;margin-bottom:7px;gap:5px}.table-fullscreen .mode-controls button{height:28px;min-height:28px;font-size:11px;padding:0 10px}.table-fullscreen .table-sidebar{display:none}.table-fullscreen .engine-loading{min-height:0;flex:1}.table-fullscreen .table-layout{min-height:0;flex:1;grid-template-columns:minmax(0,1fr);gap:10px}.table-fullscreen .table-area{min-width:0;min-height:0}.table-fullscreen .live-table{max-height:none}.table-fullscreen .action-dock{position:relative;bottom:auto;grid-column:auto;align-self:end}.table-fullscreen .mantine-Modal-root{position:relative;z-index:400}
+@media(orientation:landscape){
+ .table-fullscreen{overflow:hidden}
+ .table-fullscreen .table-heading{display:none}
+ .table-fullscreen .table-layout{grid-template-columns:minmax(0,1fr) minmax(180px,29%);grid-template-rows:minmax(0,1fr);align-items:stretch;gap:10px}
+ .table-fullscreen .table-area{display:grid;grid-template-rows:minmax(0,1fr) auto;position:relative}
+ .table-fullscreen .live-table{height:100%;width:100%;aspect-ratio:auto;max-height:none;min-height:0;border-radius:20px}
+ .table-fullscreen .meld-summary{max-height:48px;overflow:auto;margin-top:4px;gap:4px}
+ .table-fullscreen .action-dock{align-self:stretch;display:flex;flex-direction:column;justify-content:center;padding:8px;min-width:0;overflow:auto}
+ .table-fullscreen .ai-settings-row{flex-wrap:wrap;gap:4px}.table-fullscreen .ai-runtime-info{flex-basis:100%;font-size:9px}
+ .table-fullscreen .player-hand{min-width:0;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;justify-items:center}
+ .table-fullscreen .hand-scroll{overflow:visible;padding:8px 0}
+ .table-fullscreen .hand-tile{width:100%;max-width:36px;height:43px;padding:3px}
+ .table-fullscreen .hand-tile .tile-face strong{font-size:20px}.table-fullscreen .hand-tile .tile-face small{font-size:12px}
+ .table-fullscreen .hand-tile .pips{gap:2px}.table-fullscreen .hand-tile .pips i{width:4px;height:4px;border-width:1px}.table-fullscreen .hand-tile .bamboo .pips i{width:3px;height:6px}
+ .table-fullscreen .dock-controls{gap:7px;flex-wrap:wrap}.table-fullscreen .dock-status{flex-basis:100%}.table-fullscreen .dock-status strong{font-size:12px}.table-fullscreen .dock-status small{display:none}
+ .table-fullscreen:has(.spectator-hands) .table-area{grid-template-columns:minmax(0,1fr) 185px;grid-template-rows:minmax(0,1fr) auto;gap:7px}
+ .table-fullscreen:has(.spectator-hands) .spectator-hands{grid-column:2;grid-row:1/-1;grid-template-columns:1fr;overflow-y:auto;align-content:start;margin:0;gap:4px}
+ .table-fullscreen:has(.spectator-hands) .spectator-hands section{padding:5px}.table-fullscreen .spectator-hands section>div{flex-wrap:wrap;overflow:visible;gap:2px}.table-fullscreen .spectator-hands .discarded-tile{width:20px;height:28px}
+ .table-fullscreen:has(.spectator-hands) .table-layout{grid-template-columns:minmax(0,1fr) 155px}
+ .table-fullscreen .live-table .seat{gap:2px}.table-fullscreen .live-table .seat .avatar{width:20px;height:20px;font-size:11px}.table-fullscreen .live-table .seat b{font-size:9px}.table-fullscreen .live-table .seat small{font-size:6px}
+ .table-fullscreen .live-table .wall-left,.table-fullscreen .live-table .wall-right{scale:.7}
+ .table-fullscreen .live-table .wall span{width:11px;height:16px}
+ .table-fullscreen .live-table .table-center strong{font-size:20px}
+}
+@media(orientation:landscape) and (max-height:360px){.table-fullscreen .hand-tile{height:36px}.table-fullscreen .hand-scroll{padding:5px 0}.table-fullscreen .hand-top{font-size:9px}.table-fullscreen .action-dock{padding:6px}.table-fullscreen .live-table{border-width:6px}.table-fullscreen:has(.spectator-hands) .table-area{grid-template-columns:minmax(0,1fr) 148px}}
+@media(orientation:landscape){.table-fullscreen .table-heading{display:flex;align-items:center;min-height:27px}.table-fullscreen .table-heading>div{display:flex;gap:12px;align-items:center}.table-fullscreen .table-heading h1{font-size:13px;margin:0}.table-fullscreen .table-heading h1 span{display:none}.table-fullscreen .table-heading>button{height:26px;font-size:10px;padding:0 8px}.table-fullscreen .back-link{font-size:10px}}
+.table-fullscreen .mode-controls{position:sticky;top:0;z-index:8;background:var(--paper)}

@@ -45,6 +45,8 @@ Python 状态机在 Web Worker 中通过 Pyodide 运行，NumPy 及 Python 标�
 
 ## 游戏接口
 
-`engine/client.ts` 提供异步 start / action / advance / restore / dispose；`engine/types.ts` 定义视图与 JSON replay。`LiveGame.tsx` 根据裁判输出渲染并仅发送合法 action id。kdens3 通过麻将目录内的 ONNX 适配接入，仍由规则层裁判推进牌局。
+`engine/client.ts` 提供异步 start / advance / autoAdvance / restore / dispose；`engine/types.ts` 定义视图与 JSON replay。`LiveGame.tsx` 根据裁判输出渲染并请求 AI 推进一步。kdens3 通过麻将目录内的 ONNX 适配接入，仍由规则层校验各席合法动作并推进牌局。
 
 按键与弹窗使用 Mantine；自制牌面与牌桌使用 CSS。支持键盘焦点、选中状态及 `prefers-reduced-motion`；移动端手牌区独立横向滚动。
+
+牌桌的“全屏”按钮优先请求浏览器原生全屏，手机上尝试锁定横屏；不支持或被拒绝时使用页面内沉浸布局，浏览器地址栏可能仍保留，可手动横屏。横屏全屏将牌桌与操作区分栏，自己的手牌分两排，观战手牌可在区域内滚动。退出、浏览器退出全屏或返回大厅会清理方向锁及滚动限制，不重新创建牌局或加载模型。结算弹窗保留在全屏容器内。

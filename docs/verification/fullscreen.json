@@ -1,0 +1,52 @@
+{
+  "status": "passed",
+  "startedAt": "2026-11-07T12:46:08.762Z",
+  "environment": "Real desktop Edge fullscreen with resized mobile viewports; orientation API outcomes simulated; no physical-phone certification",
+  "checks": [
+    {
+      "behavior": "native layout",
+      "width": 844,
+      "height": 390
+    },
+    {
+      "behavior": "native layout",
+      "width": 667,
+      "height": 375
+    },
+    {
+      "behavior": "native layout",
+      "width": 568,
+      "height": 320
+    },
+    {
+      "behavior": "native layout",
+      "width": 320,
+      "height": 568
+    },
+    {
+      "behavior": "native enter/button exit/external exit, lock/unlock, no game or model reset"
+    },
+    {
+      "behavior": "four spectator hands and real model step"
+    },
+    {
+      "behavior": "real completed game settlement inside fullscreen"
+    },
+    {
+      "behavior": "capability fallback and initialization cancellation",
+      "capability": "unsupported"
+    },
+    {
+      "behavior": "capability fallback and initialization cancellation",
+      "capability": "rejected"
+    },
+    {
+      "behavior": "rejected orientation in portrait retains native fullscreen; initialization return cleans up"
+    }
+  ],
+  "errors": [],
+  "archives": [],
+  "external": [],
+  "url": "http://127.0.0.1:9326/xianju/",
+  "finishedAt": "2026-11-07T12:47:08.618Z"
+}
