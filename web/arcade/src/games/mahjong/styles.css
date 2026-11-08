@@ -377,7 +377,7 @@
   transition:
     transform 0.18s,
     border-color 0.18s;
-  animation: appear 0.35s both;
+  animation: appear 0.35s backwards;
 }
 .hand-tile:hover {
   transform: translateY(-5px);
@@ -1625,4 +1625,31 @@
 .model-cache-control small {
   color: var(--mantine-color-dimmed);
   font-size: 0.75rem;
+}
+
+/* Tile art from zddd312/mahjong-tiles. The PNG includes the tile body, so the
+   shells below stop drawing their own frame and let the image fill the slot. */
+.tile-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.hand-tile:has(.tile-face img),
+.discarded-tile:has(.tile-face img),
+.preview-tile:has(.tile-face img) {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.hand-tile:has(.tile-face img) {
+  height: auto;
+  aspect-ratio: 272 / 360;
+}
+.hand-tile.selected:has(.tile-face img) {
+  border: 2px solid #3e745a;
+  box-shadow: 0 0 0 1px #3e745a;
 }

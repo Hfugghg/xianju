@@ -6,23 +6,19 @@ const initialHand: Tile[] = [
   ...Array.from({ length: 3 }, (_, i) => ({ id: `c${i}`, suit: 'circle' as const, value: i + 5 })),
   ...Array.from({ length: 5 }, (_, i) => ({ id: `h${i}`, suit: 'honor' as const, value: [1, 1, 5, 6, 7][i] })),
 ];
+// Tile art: zddd312/mahjong-tiles (M+ font license, see public/tiles/LICENSE.txt).
+// Files use m/p/s notation plus z1-z7 in the national (国标) honor order.
+const TILE_FILE: Record<Tile['suit'], (value: number) => string> = {
+  wan: (value) => `${value}m`,
+  circle: (value) => `${value}p`,
+  bamboo: (value) => `${value}s`,
+  honor: (value) => `z${value}`,
+};
+
 export function TileFace({ tile }: { tile: Tile }) {
   return (
     <span className={`tile-face ${tile.suit}`} aria-hidden="true">
-      {tile.suit === 'wan' ? (
-        <>
-          <strong>{['一', '二', '三', '四', '五', '六', '七', '八', '九'][tile.value - 1]}</strong>
-          <small>萬</small>
-        </>
-      ) : tile.suit === 'honor' ? (
-        <strong>{['東', '南', '西', '北', '中', '發', '□'][tile.value - 1]}</strong>
-      ) : (
-        <span className={`pips pips-${tile.value}`}>
-          {Array.from({ length: tile.value }, (_, i) => (
-            <i key={i} />
-          ))}
-        </span>
-      )}
+      <img src={`${import.meta.env.BASE_URL}tiles/${TILE_FILE[tile.suit](tile.value)}.png`} alt="" draggable={false} />
     </span>
   );
 }
