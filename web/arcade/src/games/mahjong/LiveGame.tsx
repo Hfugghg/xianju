@@ -1,7 +1,7 @@
 import { ModelCacheControl } from '../../shared/ModelCacheControl';
 import { mahjongModel } from './modelSpec';
 import { useTableFullscreen } from './useTableFullscreen';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Alert, Button, Loader, Modal, Switch } from '@mantine/core';
 import { createMahjongClient, type GameView, type MahjongClient } from './engine/client';
 import { isBackendPreference, type BackendPreference, type Difficulty, type RuntimeProgress } from './engine/types';
@@ -24,6 +24,7 @@ const difficultyNames: Record<Difficulty, string> = { easy: '轻松', normal: '�
 export function LiveGame({ onBack }: { onBack: () => void }) {
   const fullscreen = useTableFullscreen();
   const client = useRef<MahjongClient | null>(null);
+  const logRef = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<GameView | null>(null);
   const [busy, setBusy] = useState(true);
   const [status, setStatus] = useState('正在准备牌桌…');
@@ -149,6 +150,10 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     setSelected(null);
   }, [view]);
+  useLayoutEffect(() => {
+    const log = logRef.current;
+    if (log) log.scrollTop = log.scrollHeight;
+  }, [view?.log]);
   function applyStep(next: GameView) {
     if (
       view &&
@@ -479,7 +484,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
                 快速 AI 回合
               </label>
               <p className="local-record-count">本机 {records.length} 局</p>
-              <div className="game-log" aria-label="对局记录">
+              <div className="game-log" aria-label="对局记录" ref={logRef}>
                 {view.log.slice(-8).map((entry, i) => (
                   <p key={i}>{entry}</p>
                 ))}
