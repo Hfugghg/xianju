@@ -9,6 +9,53 @@ from feature_v1 import judge_fan_total
 from shanten_py import regular_shanten_useful, seven_pairs_shanten_useful, thirteen_orphans_shanten_useful
 
 
+SEAT_NAMES = {
+    'play': ('你', '月白', '竹间', '松风'),
+    'spectate': ('东家', '月白', '竹间', '松风'),
+}
+ACTION_NAMES = {
+    'Play': '出牌',
+    'Chi': '吃',
+    'Peng': '碰',
+    'Gang': '杠',
+    'AnGang': '暗杠',
+    'BuGang': '补杠',
+    'Hu': '胡牌',
+}
+SUIT_NAMES = {'W': '万', 'T': '条', 'B': '筒'}
+HONOR_NAMES = {'F1': '东', 'F2': '南', 'F3': '西', 'F4': '北', 'J1': '中', 'J2': '发', 'J3': '白'}
+NUMERALS = '一二三四五六七八九'
+
+
+def tile_label(code):
+    if code in HONOR_NAMES:
+        return HONOR_NAMES[code]
+    suit, number = code[:1], code[1:]
+    if suit in SUIT_NAMES and number.isdigit() and 1 <= int(number) <= 9:
+        return NUMERALS[int(number) - 1] + SUIT_NAMES[suit]
+    return code
+
+
+def event_label(request, mode='play'):
+    """Turn a referee request such as 'Player 1 Play W3' into '月白 出牌 三万'."""
+    words = request.split()
+    if len(words) < 3 or words[0] != 'Player':
+        return None
+    action = ACTION_NAMES.get(words[2])
+    if action is None:
+        return None
+    try:
+        seat = int(words[1])
+    except ValueError:
+        return None
+    names = SEAT_NAMES.get(mode, SEAT_NAMES['play'])
+    name = names[seat] if 0 <= seat < len(names) else '玩家%d' % (seat + 1)
+    parts = [name, action]
+    if len(words) > 3:
+        parts.append(tile_label(words[3]))
+    return ' '.join(parts)
+
+
 class BrowserAgent(FeatureAgent):
     def request2obs(self, request):
         if 'Invalid' in request:
@@ -83,7 +130,12 @@ class BrowserGame:
         rng.shuffle(tiles)
         self.env.reset(prevalentWind=rng.randrange(4), tileWall=' '.join(tiles))
         self.log = ['新牌局：136 张无花，复式国标，8 番起和。']
-        self.env.agents[0].event_sink = self.log.append
+        self.env.agents[0].event_sink = self._record_event
+
+    def _record_event(self, request):
+        line = event_label(request, self.mode)
+        if line:
+            self.log.append(line)
 
     def step(self, action=None):
         env = self.env

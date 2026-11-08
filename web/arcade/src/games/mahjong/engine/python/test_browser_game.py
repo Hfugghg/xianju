@@ -51,10 +51,25 @@ class BrowserGameTests(unittest.TestCase):
         game = BrowserGame(42)
         agent = game.env.agents[0]
         agent.request2obs('Player 2 AnGang')
-        self.assertEqual(game.log[-1], 'Player 2 AnGang')
+        self.assertEqual(game.log[-1], '竹间 暗杠')
         self.assertNotIn('CONCEALED',game.log[-1])
         self.assertTrue(game.view()['players'][2]['packs'][-1]['concealed'])
         self.assertEqual(game.view()['players'][2]['packs'][-1]['tile'],'CONCEALED')
+
+    def test_log_uses_action_names_and_tiles(self):
+        game = BrowserGame(42, 'play')
+        agent = game.env.agents[0]
+        agent.request2obs('Player 2 Play W3')
+        self.assertEqual(game.log[-1], '竹间 出牌 三万')
+        agent.request2obs('Player 3 Play J2')
+        self.assertEqual(game.log[-1], '松风 出牌 发')
+        agent.request2obs('Player 0 Hu')
+        self.assertEqual(game.log[-1], '你 胡牌')
+
+    def test_spectate_log_names_seat_zero_by_wind(self):
+        game = BrowserGame(42, 'spectate')
+        game.env.agents[0].request2obs('Player 0 Hu')
+        self.assertEqual(game.log[-1], '东家 胡牌')
 
     def make_agent(self, tiles):
         agent = BrowserAgent(1)
