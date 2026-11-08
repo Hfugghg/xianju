@@ -1086,7 +1086,8 @@
   padding: 0;
 }
 .action-dock .hand-scroll {
-  padding: 8px 2px 7px;
+  /* The selected tile lifts 12px; overflow-x: auto also clips the y axis. */
+  padding: 16px 2px 7px;
 }
 .action-dock .hand-tile {
   animation: none;
@@ -1468,7 +1469,7 @@
   }
   .table-fullscreen .hand-scroll {
     overflow: visible;
-    padding: 8px 0;
+    padding: 14px 0 8px;
   }
   .table-fullscreen .hand-tile {
     width: 100%;
@@ -1567,7 +1568,7 @@
     height: 36px;
   }
   .table-fullscreen .hand-scroll {
-    padding: 5px 0;
+    padding: 12px 0 5px;
   }
   .table-fullscreen .hand-top {
     font-size: 9px;
