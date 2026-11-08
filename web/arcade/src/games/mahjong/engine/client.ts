@@ -88,6 +88,7 @@ export async function createMahjongClient(
   return {
     start: (seed, mode = 'play') => send({ type: 'start', seed: seed ?? Math.floor(Math.random() * 2147483647), mode }),
     restore: (replay) => send({ type: 'restore', replay }),
+    action: (action) => send({ type: 'action', action }),
     advance: (difficulty = 'expert') => send({ type: 'advance', difficulty }),
     autoAdvance: (difficulty = 'expert') => send({ type: 'auto', difficulty }),
     setBackend: (preference) =>

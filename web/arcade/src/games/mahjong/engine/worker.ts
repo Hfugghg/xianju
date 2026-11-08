@@ -144,6 +144,15 @@ async function handle(data: any) {
       const actions: Record<string, number> = {};
       for (const item of pending) actions[String(item.seat)] = await infer(item);
       view = JSON.parse(dispatch(JSON.stringify({ type: 'commit', actions })));
+    } else if (command.type === 'action') {
+      if (!Number.isInteger(command.action)) throw new Error('无效的玩家动作');
+      const pending = JSON.parse(dispatch(JSON.stringify({ type: 'pending' })));
+      if (!pending.some((item: { seat: number }) => item.seat === 0)) throw new Error('当前没有可执行的玩家动作');
+      const actions: Record<string, number> = {};
+      for (const item of pending) {
+        actions[String(item.seat)] = item.seat === 0 ? command.action : await infer(item);
+      }
+      view = JSON.parse(dispatch(JSON.stringify({ type: 'commit', actions })));
     } else if (command.type === 'setBackend') {
       if (!isBackendPreference(command.backend)) throw new Error('未知推理后端');
       if (!modelPayload) throw new Error('AI 模型尚未就绪');

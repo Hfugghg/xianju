@@ -45,6 +45,7 @@ export interface GameView {
 export interface MahjongClient {
   start(seed?: number, mode?: 'play' | 'spectate'): Promise<GameView>;
   restore(replay: GameView['replay']): Promise<GameView>;
+  action(actionId: number): Promise<GameView>;
   advance(difficulty?: Difficulty): Promise<GameView>;
   autoAdvance(difficulty?: Difficulty): Promise<GameView>;
   setBackend(preference: BackendPreference): Promise<{ backend: 'webgpu' | 'wasm'; threads: number }>;

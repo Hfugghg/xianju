@@ -18,7 +18,6 @@ function parseTile(code: string, index = 0): Tile {
     value: code[0] === 'J' ? value + 4 : value,
   };
 }
-const names = ['东家 AI', '月白', '竹间', '松风'];
 const winds = ['东', '南', '西', '北'];
 const sides = ['bottom', 'right', 'top', 'left'];
 const difficultyNames: Record<Difficulty, string> = { easy: '轻松', normal: '标准', expert: '高手' };
@@ -34,6 +33,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
   const [retry, setRetry] = useState(0);
   const [mode, setMode] = useState<'play' | 'spectate'>('play');
   const [autoPlay, setAutoPlay] = useState(false);
+  const [selected, setSelected] = useState<number | null>(null);
   const [sound, setSound] = useState(() => readLocal('sound', false));
   const [fast, setFast] = useState(() => readLocal('fast', false));
   const [difficulty, setDifficulty] = useState(() => readLocal<Difficulty>('difficulty', 'expert'));
@@ -45,6 +45,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
   const resultSaved = useRef(false);
   const abandonSave = useRef(false);
   const [storageWarning, setStorageWarning] = useState(getLocalWarning);
+  const names = mode === 'play' ? ['你', '月白', '竹间', '松风'] : ['东家 AI', '月白', '竹间', '松风'];
   function save(key: string, value: unknown) {
     if (!writeLocal(key, value)) setStorageWarning(getLocalWarning());
   }
@@ -108,7 +109,8 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
     }
   }, [view]);
   useEffect(() => {
-    if (!view || busy || backendBusy || error || view.phase === 'finished' || mode === 'spectate' || !autoPlay) return;
+    if (!view || busy || backendBusy || error || view.phase === 'finished' || mode === 'spectate') return;
+    if (!autoPlay && view.needsHuman) return;
     const timer = setTimeout(
       () => {
         if (!client.current) return;
@@ -144,6 +146,9 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
       }
     }
   }, [view?.phase]);
+  useEffect(() => {
+    setSelected(null);
+  }, [view]);
   function applyStep(next: GameView) {
     if (
       view &&
@@ -158,6 +163,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
   async function switchMode(next: 'play' | 'spectate') {
     if (!client.current || busy || mode === next) return;
     setAutoPlay(false);
+    setSelected(null);
     setBusy(true);
     setMode(next);
     setResultOpen(false);
@@ -176,6 +182,19 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
     setStatus('正在计算一步…');
     try {
       applyStep(await client.current.advance(difficulty));
+    } catch (reason) {
+      setError(String(reason));
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function act(id: number) {
+    if (!client.current || busy) return;
+    setBusy(true);
+    setSelected(null);
+    playSound(view?.actions.find((action) => action.id === id)?.label === '出牌' ? 'tap' : 'chime');
+    try {
+      setView(await client.current.action(id));
     } catch (reason) {
       setError(String(reason));
     } finally {
@@ -203,6 +222,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
   async function reset() {
     if (!client.current || busy) return;
     setAutoPlay(false);
+    setSelected(null);
     setBusy(true);
     setResultOpen(false);
     setError('');
@@ -215,6 +235,14 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
       setBusy(false);
     }
   }
+
+  const humanReady =
+    mode === 'play' && !!view && view.needsHuman && !busy && view.phase === 'playing' && !error && !autoPlay;
+  const playAction =
+    selected === null || !view
+      ? undefined
+      : view.actions.find((action) => action.tile === view.hand[selected] && action.label.startsWith('出'));
+  const otherActions = view?.actions.filter((action) => !action.label.startsWith('出')) ?? [];
 
   return (
     <main
@@ -276,7 +304,7 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
           disabled={busy || !!error || !view || mode === 'play'}
           onClick={() => switchMode('play')}
         >
-          {mode === 'play' ? '自动对战' : '开始自动新局'}
+          {mode === 'play' ? '人机对战' : '开始人机新局'}
         </Button>
         <Button
           data-testid="watch-game"
@@ -524,20 +552,75 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
                 <div className="hand-panel">
                   <div className="hand-top">
                     <span>
-                      <i />
-                      东家 AI
+                      <i />你 · 东家
+                      {humanReady ? ' · 轮到你' : autoPlay ? ' · AI 托管中' : ''}
                     </span>
                     <small>{view.hand.length} 张手牌</small>
                   </div>
                   <div className="hand-scroll">
                     <div className="player-hand">
-                      {view.hand.map((code, i) => (
-                        <span className="hand-tile readonly-tile" key={code + i} aria-label={tileName(parseTile(code))}>
-                          <TileFace tile={parseTile(code, i)} />
-                        </span>
-                      ))}
+                      {view.hand.map((code, i) => {
+                        const tile = parseTile(code, i);
+                        return (
+                          <button
+                            className={`hand-tile${selected === i ? ' selected' : ''}`}
+                            key={tile.id}
+                            data-testid="hand-tile"
+                            disabled={!humanReady}
+                            aria-label={`选择${tileName(tile)}`}
+                            aria-pressed={selected === i}
+                            onClick={() => setSelected(i)}
+                          >
+                            <TileFace tile={tile} />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
+                  <div className="hand-actions">
+                    <p aria-live="polite">
+                      {view.phase === 'finished'
+                        ? '本局结束，可查看结算或重新开局。'
+                        : error
+                          ? '牌桌暂停，请处理错误。'
+                          : autoPlay
+                            ? 'AI 托管中；关闭开关即可自己出牌。'
+                            : humanReady
+                              ? '轮到你。选择手牌出牌，或使用下方动作。'
+                              : status}
+                    </p>
+                    <Button
+                      data-testid="discard-tile"
+                      disabled={!humanReady || !playAction}
+                      onClick={() => playAction && act(playAction.id)}
+                    >
+                      出牌 ↑
+                    </Button>
+                  </div>
+                  {humanReady && otherActions.length > 0 && (
+                    <div className="legal-actions">
+                      {otherActions.map((action) => (
+                        <Button
+                          key={action.id}
+                          variant={action.label.includes('胡') ? 'filled' : 'outline'}
+                          onClick={() => act(action.id)}
+                        >
+                          {action.label}
+                          {action.tile
+                            ? ` · ${
+                                action.label === '吃'
+                                  ? [-1, 0, 1]
+                                      .map((offset) =>
+                                        tileName(parseTile(action.tile![0] + (Number(action.tile!.slice(1)) + offset))),
+                                      )
+                                      .join(' / ')
+                                  : tileName(parseTile(action.tile))
+                              }`
+                            : ''}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="dock-controls">
@@ -551,13 +634,17 @@ export function LiveGame({ onBack }: { onBack: () => void }) {
                           ? busy
                             ? '正在计算一步…'
                             : '已暂停'
-                          : autoPlay
-                            ? busy
-                              ? 'AI 正在计算…'
-                              : `${names[view.currentPlayer]} 正在行动`
-                            : '已暂停'}
+                          : humanReady
+                            ? '轮到你了'
+                            : busy
+                              ? autoPlay
+                                ? 'AI 正在计算…'
+                                : '正在计算…'
+                              : `${names[view.currentPlayer]} 正在行动`}
                   </strong>
-                  <small>{mode === 'spectate' ? '四家明手' : '四家 AI 托管'}</small>
+                  <small>
+                    {mode === 'spectate' ? '四家明手' : autoPlay ? '四家 AI 托管' : '你执东家，其余由 AI 应对'}
+                  </small>
                 </div>
                 {mode === 'play' ? (
                   <Switch
